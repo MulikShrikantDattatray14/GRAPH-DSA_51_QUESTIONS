@@ -1,0 +1,235 @@
+e Disjoint Set data structure which is a very important topic in the entire graph series. Let’s first understand why we need a Disjoint Set data structure using the below question:
+
+Question: Given two components of an undirected graph.
+
+1-2-3-4
+
+5-6-7
+
+The question is whether node 1 and node 5 are in the same component or not.
+
+Approach:
+
+Now, in order to solve this question we can use either the DFS or BFS traversal technique like if we traverse the components of the graph we can find that node 1 and node 5 are not in the same component. This is actually the brute force approach whose time complexity is O(N+E)(N = no. of nodes, E = no. of edges). But using a Disjoint Set data structure we can solve this same problem in constant time.
+
+The disjoint Set data structure is generally used for dynamic graphs. 
+
+Dynamic graph:
+
+A dynamic graph generally refers to a graph that keeps on changing its configuration. Let’s deep dive into it using an example:
+
+Let’s consider the edge information for the given graph as: {{1,2}, {2,3}, {4,5}, {6,7}, {5,6}, {3,7}}. Now if we start adding the edges one by one, in each step the structure of the graph will change. So, after each step, if we perform the same operation on the graph while updating the edges, the result might be different. In this case, the graph will be considered a dynamic graph.
+For example, after adding the first 4 edges if we look at the graph, we will find that node 4 and node 1 belong to different components but after adding all 6 edges if we search for the same we will figure out that node 4 and node 1 belong to the same component.
+
+So, after any step, if we try to figure out whether two arbitrary nodes u and v belong to the same component or not, Disjoint Set will be able to answer this query in constant time.
+
+
+Functionalities of Disjoint Set data structure:
+
+
+The disjoint set data structure generally provides two types of functionalities:
+
+1.Finding the parent for a particular node (findPar())
+2.Union (in broad terms this method basically adds an edge between two nodes)
+   i.Union by rank
+   ii.Union by size
+First, we will be discussing Union by rank and then Union by size.
+
+
+i.Union by rank:
+
+Before discussing Union by rank we need to discuss some terminologies:
+
+1.Rank:
+
+The rank of a node generally refers to the distance (the number of nodes including the leaf node) between the furthest leaf node and the current node. Basically rank includes all the nodes beneath the current node.
+
+
+2.Ultimate parent:
+
+The parent of a node generally refers to the node right above that particular node. But the ultimate parent refers to the topmost node or the root node.
+
+
+Now let’s discuss the implementation of the union by rank function. In order to implement Union by rank, we basically need two arrays of size N(no. of nodes). One is the rank and the other one is the parent. The rank array basically stores the rank of each node and the parent array stores the ultimate parent for each node.
+=========================================================================================
+Union By Rank : 
+------------------------------
+class DisjointSet {
+  constructor(n) {
+    this.rank = new Array(n + 1).fill(0);
+    this.parent = [...Array(n + 1).keys()];
+    // Array(n + 1): Creates an array with n + 1 undefined elements.
+    // .keys(): Retrieves an iterator of the array keys (indices).
+    // ...: The spread operator is used to spread the iterator into individual elements.
+    this.size = new Array(n + 1).fill(1);
+  }
+  findUPar(node) {
+    // find ultimate parent
+    if (node === this.parent[node]) {
+      return node;
+    }
+    const ulp = this.findUPar(this.parent[node]);
+    this.parent[node] = ulp;
+    return this.parent[node];
+  }
+  unionByRank(u, v) {
+    const ulp_u = this.findUPar(u);
+    const ulp_v = this.findUPar(v);
+    if (ulp_u === ulp_v) return;
+    if (this.rank[ulp_u] < this.rank[ulp_v]) {
+      this.parent[ulp_u] = ulp_v;
+    } else if (this.rank[ulp_v] < this.rank[ulp_u]) {
+      this.parent[ulp_v] = ulp_u;
+    } else {
+      this.parent[ulp_v] = ulp_u;
+      const rankU = this.rank[ulp_u];
+      this.rank[ulp_u] = rankU + 1;
+    }
+  }
+
+  unionBySize(u, v) {
+    const ulp_u = this.findUPar(u);
+    const ulp_v = this.findUPar(v);
+    if (ulp_u === ulp_v) return;
+    if (this.size[ulp_u] < this.size[ulp_v]) {
+      this.parent[ulp_u] = ulp_v;
+      this.size[ulp_v] += this.size[ulp_u];
+    } else {
+      this.parent[ulp_v] = ulp_u;
+      this.size[ulp_u] += this.size[ulp_v];
+    }
+  }
+}
+
+const ds1 = new DisjointSet(7);
+ds1.unionByRank(1, 2);
+ds1.unionByRank(2, 3);
+ds1.unionByRank(4, 5);
+ds1.unionByRank(6, 7);
+ds1.unionByRank(5, 6);
+
+// if 3 and 7 are the same or not
+if (ds1.findUPar(3) === ds1.findUPar(7)) {
+  console.log("Same");
+} else {
+  console.log("Not Same");
+}
+
+ds1.unionByRank(3, 7);
+if (ds1.findUPar(3) === ds1.findUPar(7)) {
+  console.log("Same");
+} else {
+  console.log("Not Same");
+}
+
+//Time Complexity:  The actual time complexity is O(4) which is very small and close to 1. So, we can consider 4 as a constant.
+
+
+=====================================================================================
+//union by size : Union by size:
+This is as same as the Union by rank method except this method uses the size to compare the components while connecting. That is why we need a ‘size’ array of size N(no. of nodes) instead of a rank array. The size array will be storing the size for each particular node i.e. size[i] will be the size of the component starting from node i.
+
+Typically, the size of a node refers to the number of nodes that are connected to it.
+--------------------------------------------------
+
+class DisjointSet {
+  constructor(n) {
+    this.rank = new Array(n + 1).fill(0);
+    this.parent = new Array(n + 1);
+    this.size = new Array(n + 1).fill(1);
+
+    for (let i = 0; i <= n; i++) {
+      this.parent[i] = i;
+    }
+  }
+  //The findUPar function in the given code is an implementation of the "path compression" technique used in the context of disjoint-set data structures, particularly in the "union-find" algorithm. This technique is employed to optimize the time complexity of the find operation within the disjoint-set data structure.
+
+  //Here's a brief explanation of how the findUPar function works:
+
+  //The function takes a node as an argument, representing an element in the disjoint-set.
+
+  //It checks if the current node is its own parent (i.e., the representative or leader of its set). If it is, the node is already the ultimate parent, and the function returns the node itself.
+
+  //If the node is not its own parent, it means that the node has a parent. The function recursively calls itself on the parent of the current node (this.parent[node]).
+
+  //During the recursive call, the function continues to traverse the parent pointers until it reaches the ultimate parent (the leader of the set).
+
+  //As the recursion unwinds, the path from the current node to the ultimate parent is compressed. This is achieved by updating the parent pointer of each intermediate node in the path directly to the ultimate parent. This step is known as "path compression."
+
+  //The primary purpose of path compression is to flatten the tree structure formed by the parent pointers, leading to shorter paths and improving the overall efficiency of subsequent find operations. By doing this, future calls to findUPar on the same set will have faster lookup times, as the paths to the ultimate parent are shortened.
+
+  findUPar(node) {
+    if (node === this.parent[node]) {
+      // when the node becomes the boss or the ultimate parents , then return the node
+      return node;
+    }
+    ////If the node is not its own parent, it means that the node has a parent. The function recursively calls itself on the parent of the current node (this.parent[node]).
+    return (this.parent[node] = this.findUPar(this.parent[node]));
+  }
+
+  unionByRank(u, v) {
+    let ulp_u = this.findUPar(u);
+    let ulp_v = this.findUPar(v);
+
+    if (ulp_u === ulp_v) {
+      // both have same parents , so they are already joined by a single ultimate parent.
+      return;
+    }
+
+    if (this.rank[ulp_u] < this.rank[ulp_v]) {
+      // find the element whose rank is smaller and connect that with the ultimate parent of the element with higher rank.
+      this.parent[ulp_u] = ulp_v;
+    } else if (this.rank[ulp_v] < this.rank[ulp_u]) {
+      this.parent[ulp_v] = ulp_u;
+    } else {
+      // if rank are equal
+      this.parent[ulp_v] = ulp_u;
+      this.rank[ulp_u]++; // as both are of equal rank, on joining increasing the rank
+    }
+  }
+  //This is as same as the Union by rank method except this method uses the size to compare the components while connecting.
+  unionBySize(u, v) {
+    let ulp_u = this.findUPar(u);
+    let ulp_v = this.findUPar(v);
+
+    if (ulp_u === ulp_v) {
+      return;
+    }
+
+    if (this.size[ulp_u] < this.size[ulp_v]) {
+      this.parent[ulp_u] = ulp_v;
+      // merge the size of both
+      this.size[ulp_v] += this.size[ulp_u];
+    } else {
+      this.parent[ulp_v] = ulp_u;
+      // // merge the size of both
+      this.size[ulp_u] += this.size[ulp_v];
+    }
+  }
+}
+
+const ds = new DisjointSet(7);
+ds.unionBySize(1, 2);
+ds.unionBySize(2, 3);
+ds.unionBySize(4, 5);
+ds.unionBySize(6, 7);
+ds.unionBySize(5, 6);
+
+// Check if 3 and 7 are in the same set
+if (ds.findUPar(3) === ds.findUPar(7)) {
+  console.log("Same");
+} else {
+  console.log("Not same");
+}
+
+ds.unionBySize(3, 7);
+
+// Check if 3 and 7 are in the same set after union
+if (ds.findUPar(3) === ds.findUPar(7)) {
+  console.log("Same");
+} else {
+  console.log("Not same");
+}
+
+
+======================================================================================

@@ -1,0 +1,282 @@
+Problem Statement II (Pre-requisite Tasks): There are a total of N tasks, labeled from 0 to N-1. Some tasks may have prerequisites, for example, to do task 0 you have to first complete task 1, which is expressed as a pair: [0, 1]
+
+Given the total number of tasks N and a list of prerequisite pairs P, find if it is possible to finish all tasks.
+
+solution : 
+
+Time Complexity: O(V+E), where V = no. of nodes and E = no. of edges. This is a simple BFS algorithm.
+
+Space Complexity: O(N) + O(N) ~ O(2N), O(N) for the indegree array, and O(N) for the queue data structure used in BFS(where N = no.of nodes). Extra O(N) for storing the topological sorting. Total ~ O(3N).
+
+ ==============================================================================================================================================================================================================================
+
+ this question can be solved in 2 ways : 
+ 1. detect a graph in a directed graph : if graph is detected , there is  no topological sort , else sort is possible . 
+
+ 2. kahn topological sort using the BFS .
+
+ ====================================================================================================================================================================================
+// using topo sort logic : 
+-------------------------------
+function Queue() {
+  var a = [],
+    b = 0;
+  this.getLength = function () {
+    return a.length - b;
+  };
+  this.isEmpty = function () {
+    return 0 == a.length;
+  };
+  this.enqueue = function (b) {
+    a.push(b);
+  };
+  this.dequeue = function () {
+    if (a.length === 0) return undefined;
+    const c = a[b++];
+    if (2 * b >= a.length) {
+      a = a.slice(b);
+      b = 0;
+    }
+    return c;
+  };
+
+  this.peek = function () {
+    return 0 < a.length ? a[b] : void 0;
+  };
+}
+
+// const N = 4;
+// const prerequisites = [
+//   [1, 0],
+//   [2, 1],
+//   [3, 2],
+// ]; //yes //[ 3, 2, 1, 0 ]
+
+let prerequisites = [
+  [2, 3],
+  [3, 1],
+  [4, 0],
+  [4, 1],
+  [5, 0],
+  [5, 2],
+];
+const N = 6;
+const P = 6; //[ 4, 5, 0, 2, 3, 1 ]//YES
+
+// let N = 4;
+// let  P = 4;
+// let prerequisites = [[1,2],[4,3],[2,4],[4,1]]
+//Output: No
+
+const ans = isPossible(N, prerequisites);
+if (ans) {
+  console.log("YES");
+} else {
+  console.log("NO");
+}
+function isPossible(V, prerequisites) {
+  // Form a graph
+  const adj = [];
+  for (let i = 0; i < V; i++) {
+    adj.push([]);
+  }
+  const m = prerequisites.length;
+  for (let i = 0; i < m; i++) {
+    adj[prerequisites[i][0]].push(prerequisites[i][1]);
+  }
+  // fill the indegree array .
+  const indegree = new Array(V + 1).fill(0);
+  for (let i = 0; i < V; i++) {
+    for (let j = 0; j < adj[i].length; j++) {
+      indegree[adj[i][j]]++;
+    }
+  }
+  // create a queue amd start filling the queue with the node with the 0 indegree.
+  const q = new Queue();
+  for (let i = 0; i < V; i++) {
+    if (indegree[i] === 0) {
+      q.enqueue(i);
+    }
+  }
+  const topo = [];
+  // O(V + E)
+  while (q.getLength() > 0) {
+    const node = q.dequeue();
+    topo.push(node);
+    for (let it of adj[node]) {
+      indegree[it]--;
+      if (indegree[it] === 0) q.enqueue(it);
+    }
+  }
+  // if my ordering contains all the vertices , then it means no cycle present, as all the vertices were there in the topological sort.and thus yes.
+  console.log(topo);
+  return topo.length === V;
+}
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// scaler question of similiar kind : 
+
+Q1. Possibility of Finishing :
+
+Problem Description
+There are a total of A courses you have to take, labeled from 1 to A.
+
+Some courses may have prerequisites, for example to take course 2 you have to first take course 1, which is expressed as a pair: [1,2].
+
+So you are given two integer array B and C of same size where for each i (B[i], C[i]) denotes a pair.
+
+Given the total number of courses and a list of prerequisite pairs, is it possible for you to finish all courses?
+
+Return 1 if it is possible to finish all the courses, or 0 if it is not possible to finish all the courses.
+
+
+
+Problem Constraints
+1 <= A <= 6*104
+
+1 <= length(B) = length(C) <= 105
+
+1 <= B[i], C[i] <= A
+
+
+
+Input Format
+The first argument of input contains an integer A, representing the number of courses.
+
+The second argument of input contains an integer array, B.
+
+The third argument of input contains an integer array, C.
+
+
+
+Output Format
+Return 1 if it is possible to finish all the courses, or 0 if it is not possible to finish all the courses.
+
+
+
+Example Input
+Input 1:
+
+ A = 3
+ B = [1, 2]
+ C = [2, 3]
+Input 2:
+
+ A = 2
+ B = [1, 2]
+ C = [2, 1]
+
+
+Example Output
+Output 1:
+
+ 1
+Output 2:
+
+ 0
+
+
+Example Explanation
+Explanation 1:
+
+ It is possible to complete the courses in the following order:
+    1 -> 2 -> 3
+Explanation 2:
+
+ It is not possible to complete all the courses.
+
+ ===============================================================================
+
+ module.exports = {
+    //param A : integer
+    //param B : array of integers
+    //param C : array of integers
+    //return an integer
+    solve: function (A, B, C) {
+        function Queue() {
+            var a = [],
+                b = 0;
+            this.getLength = function () {
+                return a.length - b;
+            };
+            this.isEmpty = function () {
+                return 0 == a.length;
+            };
+            this.enqueue = function (b) {
+                a.push(b);
+            };
+            this.dequeue = function () {
+                if (a.length === 0) return undefined;
+                const c = a[b++];
+                if (2 * b >= a.length) {
+                    a = a.slice(b);
+                    b = 0;
+                }
+                return c;
+            };
+
+            this.peek = function () {
+                return 0 < a.length ? a[b] : void 0;
+            };
+        }
+
+
+
+        let ans = solve1(A, B, C);
+       return(ans);
+
+        function solve1(A, B, C) {
+            let V = A;
+            let prerequisites = [];
+            for (let i = 0; i < B.length; i++) {
+                let temp = [B[i], C[i]];
+                prerequisites.push(temp);
+            }
+           
+            const adj = [];
+            for (let i = 0; i <= V; i++) {
+                adj.push([]);
+            }
+           
+            const m = prerequisites.length;
+            for (let i = 0; i < m; i++) {
+                adj[prerequisites[i][0]].push(prerequisites[i][1]);
+            }
+            // fill the indegree array .
+            const indegree = new Array(V + 1).fill(0);
+            for (let i = 1; i <= V; i++) {
+                for (let j = 0; j < adj[i].length; j++) {
+                    indegree[adj[i][j]]++;
+                }
+            }
+            // create a queue amd start filling the queue with the node with the 0 indegree.
+            const q = new Queue();
+            for (let i = 1; i <= V; i++) {
+                if (indegree[i] === 0) {
+                    q.enqueue(i);
+                }
+            }
+            const topo = [];
+            // O(V + E)
+            while (q.getLength() > 0) {
+                const node = q.dequeue();
+                topo.push(node);
+                for (let it of adj[node]) {
+                    indegree[it]--;
+                    if (indegree[it] === 0) q.enqueue(it);
+                }
+            }
+            // if my ordering contains all the vertices , then it means no cycle present, as all the vertices were there in the topological sort.and thus yes.
+           
+            let order = topo.length === V;
+
+            if (order) return 1;
+            else return 0;
+        }
+
+    }
+};
+
+
+
+====================================================================================================================================================================

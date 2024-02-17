@@ -1,0 +1,110 @@
+There are n cities connected by some number of flights. You are given an array flights where flights[i] = [fromi, toi, pricei] indicates that there is a flight from city fromi to city toi with cost pricei.
+
+You are also given three integers src, dst, and k, return the cheapest price from src to dst with at most k stops. If there is no such route, return -1.
+
+Example 1:
+
+Input: n = 4, flights = [[0,1,100],[1,2,100],[2,0,100],[1,3,600],[2,3,200]], src = 0, dst = 3, k = 1
+Output: 700
+Explanation:
+The graph is shown above.
+The optimal path with at most 1 stop from city 0 to 3 is marked in red and has cost 100 + 600 = 700.
+Note that the path through cities [0,1,2,3] is cheaper but is invalid because it uses 2 stops.
+Example 2:
+
+
+Input: n = 3, flights = [[0,1,100],[1,2,100],[0,2,500]], src = 0, dst = 2, k = 1
+Output: 200
+Explanation:
+The graph is shown above.
+The optimal path with at most 1 stop from city 0 to 2 is marked in red and has cost 100 + 100 = 200.
+Example 3:
+
+
+Input: n = 3, flights = [[0,1,100],[1,2,100],[0,2,500]], src = 0, dst = 2, k = 0
+Output: 500
+Explanation:
+The graph is shown above.
+The optimal path with no stops from city 0 to 2 is marked in red and has cost 500.
+ 
+
+Constraints:
+
+1 <= n <= 100
+0 <= flights.length <= (n * (n - 1) / 2)
+flights[i].length == 3
+0 <= fromi, toi < n
+fromi != toi
+1 <= pricei <= 104
+There will not be any multiple flights between two cities.
+0 <= src, dst, k < n
+src != dst
+
+===================================================================================================================================================================
+
+let n = 3;
+let flights = [
+  [0, 1, 100],
+  [1, 2, 100],
+  [0, 2, 500],
+];
+let src = 0;
+let dst = 2;
+let K = 1;
+//////////////////////////////////////////////
+// let n = 4; //nodes
+// let flights = [
+//   [0, 1, 100],
+//   [1, 2, 100],
+//   [2, 0, 100],
+//   [1, 3, 600],
+//   [2, 3, 200],
+// ];
+// let src = 0;
+// let dst = 3;
+// let K = 2;
+// 400;
+const ans = CheapestFlight(n, flights, src, dst, K);
+console.log(ans);
+
+function CheapestFlight(n, flights, src, dst, K) {
+  const adj = [];
+  for (let i = 0; i < n; i++) {
+    adj.push([]);
+  }
+  for (let i = 0; i < flights.length; i++) {
+    const [start, end, cost] = flights[i];
+    adj[start].push({ end: end, cost: cost });
+  }
+  const q = []; // no need of priority queue, as stop is increasing by 1 step each .
+  q.push({ stops_used: 0, curr_node: src, total_cost: 0 }); //[stop, nodes, distance]
+  const dist = new Array(n).fill(1e9);
+  dist[src] = 0;
+  while (q.length > 0) {
+    const it = q.shift();
+    const stops = it.stops_used;
+    const node = it.curr_node;
+    const cost = it.total_cost;
+    if (stops > K) continue;
+    for (let i = 0; i < adj[node].length; i++) {
+      const iter = adj[node][i];
+      const adjNode = iter.end;
+      const edW = iter.cost;
+
+      if (cost + edW < dist[adjNode] && stops <= K) {
+        dist[adjNode] = cost + edW;
+        q.push({
+          stops_used: stops + 1,
+          curr_node: adjNode,
+          total_cost: cost + edW,
+        });
+      }
+    }
+  }
+  if (dist[dst] === 1e9) return -1;
+  return dist[dst];
+}
+
+
+
+====================================================================================================================================================================

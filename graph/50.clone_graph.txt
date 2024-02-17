@@ -1,0 +1,135 @@
+logic/approach :-
+
+1. start traversing the graph from the given node(here root of the graph is given).
+2. take a hashmap()- store the references of the copy of all the nodes that have already been visited and cloned. 
+2.1- If node is already visited i.e already exists in the hashmap , then return the corresponding address of the cloned node and thus no need to traverse it  again. In hashmap, key is the original node and value is the cloned node.
+2.2 - on traversing the graph , if i do not find the node in visited hashmap , we can create a copy of it and put it in hashmap. 
+3. make recursive call for the neighbours of the node . No of the recursive call depends on the no of neighbours of the particular node. each recursive call made returns the clone of the neighbor.
+
+===================================================================================================================================================================================
+
+
+//  Definition for UndirectedGraphNode.
+function UndirectedGraphNode(data) {
+  this.label = data;
+  this.neighbours = [];
+}
+// take a hashmap()- store the references of the copy of all the nodes that have already been visited and cloned. 
+let map = new Map();
+
+function auxCloneGraph(node) {
+  if (node == null) return node;
+  if (map.has(node)) {
+    //If node is already visited i.e already exists in the hashmap , then return the corresponding address of the cloned node and thus no need to traverse it  again.
+    return map.get(node);
+  }
+  // as soon as you create a clone , map it .
+  let clone = new UndirectedGraphNode(node.label);
+  //on traversing the graph , if i do not find the node in visited hashmap , we can create a copy of it and put it in hashmap. 
+  map.set(node, clone);
+  for (let i = 0; i < node.neighbours.length; i++) {
+    //make recursive call for the neighbours of the node . No of the recursive call depends on the no of neighbours of the particular node. each recursive call made returns the clone of the neighbor.
+    let neighbor = node.neighbours[i];
+    clone.neighbours.push(auxCloneGraph(neighbor));
+  }
+  return clone;
+}
+
+// param A : root of the undirected graph.
+// Return the node denoting the root of the new clone graph.
+function cloneGraph(A) {
+  return auxCloneGraph(A);
+}
+
+// Example usage
+let node1 = new UndirectedGraphNode(1);
+let node2 = new UndirectedGraphNode(2);
+let node3 = new UndirectedGraphNode(3);
+
+node1.neighbours.push(node2);
+node1.neighbours.push(node3);
+node2.neighbours.push(node1);
+node2.neighbours.push(node3);
+node3.neighbours.push(node1);
+node3.neighbours.push(node2);
+
+let clonedGraph = cloneGraph(node1);
+
+// Now, `clonedGraph` is the root of the cloned graph.
+// You can access the cloned nodes and their neighbors as follows:
+
+console.log("Original Graph:");
+console.log(
+  "Node 1 neighbors:",
+  node1.neighbours.map((neighbor) => neighbor.label)
+);
+console.log(
+  "Node 2 neighbors:",
+  node2.neighbours.map((neighbor) => neighbor.label)
+);
+console.log(
+  "Node 3 neighbors:",
+  node3.neighbours.map((neighbor) => neighbor.label)
+);
+
+console.log("\nCloned Graph:");
+console.log(
+  "Cloned Node 1 neighbors:",
+  clonedGraph.neighbours.map((neighbor) => neighbor.label)
+);
+console.log(
+  "Cloned Node 2 neighbors:",
+  clonedGraph.neighbours[0].neighbours.map((neighbor) => neighbor.label)
+);
+console.log(
+  "Cloned Node 3 neighbors:",
+  clonedGraph.neighbours[1].neighbours.map((neighbor) => neighbor.label)
+);
+
+===============================================================================================================================================================================================================================
+
+
+// Certainly! This code is an implementation of a deep copy for an undirected graph.It uses a depth - first search(DFS) approach to clone the given graph.Let's go through it line by line:
+// ///////////////////////////////////////////////////////////////////////////////////////////////
+// function UndirectedGraphNode(data) {
+//     this.label = data;
+//     this.neighbours = [];
+// }
+// This defines a constructor function for creating nodes in the undirected graph.Each node has a label and an array neighbours to store its adjacent nodes.
+// ///////////////////////////////////////////////////////////////////////////////////////////////
+// let map = new Map();
+// This initializes a Map called map which will be used to keep track of nodes in the original graph and their corresponding clones.so that we escape the infinite loop that gets created before of undirected graph.
+// //////////////////////////////////////////////////////////////////////////////////////////////
+// function auxCloneGraph(node) {
+//     if (node == null)
+//         return node;
+// This function is a helper function for cloning the graph.It takes a node as an argument and checks if the node is null.If the node is null, it returns null.
+//         /////////////////////////////////////////////////////////////////////////////////////////////////
+//         if(map.has(node)) {
+//         return map.get(node);
+//     }
+// If the map already contains the current node, it means the node and its neighbors have already been cloned.In this case, it returns the corresponding clone from the map.
+//     ////////////////////////////////////////////////////////////////////////////////////////////////
+//     let clone = new UndirectedGraphNode(node.label);
+//     map.set(node, clone);
+// If the node is not in the map, a new clone is created with the same label as the original node.The clone is then added to the map with the original node as the key and the clone as the value.
+//         ////////////////////////////////////////////////////////////////////////////////////////////////
+//         for(let i = 0; i < node.neighbors.length; i++) {
+//         let neighbor = node.neighbors[i];
+//         clone.neighbors.push(auxCloneGraph(neighbor));
+//     }
+// It then iterates through the neighbors of the original node, recursively calling auxCloneGraph on each neighbor and adding the corresponding clone to the neighbors array of the current clone.
+//     ///////////////////////////////////////////////////////////////////////////////////////////////////
+//     return clone;
+//     Finally, the function returns the clone of the current node.
+//         ///////////////////////////////////////////////////////////////////////////////////////////////////
+//         module.exports = {
+//         cloneGraph: function (A) {
+//             map = new Map();
+//             return auxCloneGraph(A);
+//         }
+//     };
+// This exports an object with a single method cloneGraph.It resets the map and then calls the auxCloneGraph function with the root node of the original graph(A).This method can be called to clone an entire graph.
+// In summary, this code defines a class for undirected graph nodes and provides a method(cloneGraph) to clone an entire undirected graph using depth - first search and a Map to keep track of already cloned nodes.
+
+=================================================================================

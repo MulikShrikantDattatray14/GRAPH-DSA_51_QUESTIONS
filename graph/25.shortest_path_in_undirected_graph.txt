@@ -1,0 +1,96 @@
+Given an Undirected Graph having unit weight, find the shortest path from the source to all other nodes in this graph. In this problem statement, we have assumed the source vertex to be ‘0’. If a vertex is unreachable from the source node, then return -1 for that vertex.
+
+Time Complexity: O(M) { for creating the adjacency list from given list ‘edges’} + O(N + 2M) { for the BFS Algorithm} + O(N) { for adding the final values of the shortest path in the resultant array} ~ O(N+2M). 
+
+Where N= number of vertices and M= number of edges.
+
+Space Complexity:  O( N) {for the stack storing the BFS} + O(N) {for the resultant array} + O(N) {for the dist array storing updated shortest paths} + O( N+2M) {for the adjacency list} ~ O(N+M) .
+
+Where N= number of vertices and M= number of edges.
+
+==========================================================================
+
+//find the shortest path from the source to all other nodes in this graph.
+function Queue() {
+  var a = [],
+    b = 0;
+  this.getLength = function () {
+    return a.length - b;
+  };
+  this.isEmpty = function () {
+    return 0 == a.length;
+  };
+  this.enqueue = function (b) {
+    a.push(b);
+  };
+  this.dequeue = function () {
+    if (a.length === 0) return undefined;
+    const c = a[b++];
+    if (2 * b >= a.length) {
+      a = a.slice(b);
+      b = 0;
+    }
+    return c;
+  };
+
+  this.peek = function () {
+    return 0 < a.length ? a[b] : void 0;
+  };
+}
+const n = 9,
+  m = 10;
+const edges = [
+  [0, 1],
+  [0, 3],
+  [3, 4],
+  [4, 5],
+  [5, 6],
+  [1, 2],
+  [2, 6],
+  [6, 7],
+  [7, 8],
+  [6, 8],
+];
+let src = 2;
+const res = shortestPath(edges, n, m, src);
+console.log(res);
+
+function shortestPath(edges, n, m, src) {
+  // Create an adjacency list of size N for storing the undirected graph.
+  const adj = [];
+  for (let i = 0; i < n; i++) {
+    adj.push([]);
+  }
+  for (let i = 0; i < m; i++) {
+    adj[edges[i][0]].push(edges[i][1]);
+    adj[edges[i][1]].push(edges[i][0]);
+  }
+  // A dist array of size N initialised with a large number to
+  // indicate that initially all the nodes are untraversed.and this dist array will represent the shortest distance from source to all the nodes.
+  const dist = Array(n).fill(Number.MAX_SAFE_INTEGER);
+  // mark the distance of the starting node/ source as 0.
+  dist[src] = 0;
+  // BFS Implementation
+  const q = new Queue();
+  q.enqueue(src);
+  while (q.getLength() > 0) {
+    let node = q.dequeue();
+    for (let it of adj[node]) {
+      if (dist[node] + 1 < dist[it]) {
+        //we want to maintain the minimum distance
+        dist[it] = 1 + dist[node];
+        q.enqueue(it);
+      }
+    }
+  }
+  // Updated shortest distances are stored in the resultant array ‘ans’.
+  // Unreachable nodes are marked as -1.
+  for (let i = 0; i < n; i++) {
+    if (dist[i] === Number.MAX_SAFE_INTEGER) {
+      dist[i] = -1;
+    }
+  }
+  return dist;
+}
+
+==============================================================================

@@ -1,0 +1,191 @@
+Problem Statement: 
+
+Given an n * m matrix grid where each element can either be 0 or 1. You need to find the shortest distance between a given source cell to a destination cell. The path can only be created out of a cell if its value is 1. 
+
+If the path is not possible between the source cell and the destination cell, then return -1.
+
+Note: You can move into an adjacent cell if that adjacent cell is filled with element 1. Two cells are adjacent if they share a side. In other words, you can move in one of four directions, Up, Down, Left, and Right.
+
+===================================================================================================================================================================
+// 4 direction and here we should pass  through the '1's and skip '0's :
+=====================================================================================================
+
+const source = [0, 1];
+const destination = [2, 2];
+const grid = [
+  [1, 1, 1, 1],
+  [1, 1, 0, 1],
+  [1, 1, 1, 1],
+  [1, 1, 0, 0],
+  [1, 0, 0, 1],
+];
+const res = shortestPath(grid, source, destination);
+console.log(res);
+
+function tuple(_first, _second, _third) {
+  return { first: _first, second: _second, third: _third };
+}
+
+function shortestPath(grid, source, destination) {
+  // if source and destination are on the same place/location
+  if (source[0] === destination[0] && source[1] === destination[1]) return 0;
+  //else
+  const queue = [];
+  const n = grid.length;
+  const m = grid[0].length;
+  // create a distance matrix
+  const dist = [];
+  for (let i = 0; i < n; i++) {
+    dist.push(new Array(m).fill(1e9));
+  }
+
+  dist[source[0]][source[1]] = 0;
+  // distance, row ,column
+  queue.push(tuple(0, source[0], source[1]));
+  const dr = [-1, 0, 1, 0];
+  const dc = [0, 1, 0, -1];
+  while (queue.length !== 0) {
+    const it = queue.shift();
+    const dis = it.first;
+    const r = it.second;
+    const c = it.third;
+    for (let i = 0; i < 4; i++) {
+      const newr = r + dr[i];
+      const newc = c + dc[i];
+      if (
+        newr >= 0 &&
+        newr < n &&
+        newc >= 0 &&
+        newc < m &&
+        grid[newr][newc] === 1 &&
+        dis + 1 < dist[newr][newc]
+      ) {
+        dist[newr][newc] = 1 + dis;
+        if (newr === destination[0] && newc === destination[1]) return dis + 1;
+        queue.push(tuple(1 + dis, newr, newc));
+      }
+    }
+  }
+
+  return -1;
+}
+
+
+============================================================================================================
+// 8 direction and here we should pass  through the '0's and skip '1's :
+======================================================================================================
+leetcode : 1091 :https://leetcode.com/problems/shortest-path-in-binary-matrix/description/
+
+
+/**
+
+* @param {number[][]} grid
+
+* @return {number}
+
+*/
+
+var shortestPathBinaryMatrix = function (grid) {
+
+    const source = [0, 0];
+
+    const destination = [grid.length - 1, grid[0].length - 1];
+
+    const res = shortestPath(grid, source, destination);
+
+    return (res + 1);
+
+    function tuple(_first, _second, _third) {
+
+        return { first: _first, second: _second, third: _third };
+
+    }
+
+    function shortestPath(grid, source, destination) {
+
+        // if source and destination are on the same place/location
+
+
+        if (grid[source[0]][source[1]] === 1)
+            return -2;
+
+        if (source[0] === destination[0] && source[1] === destination[1]) return 0;
+
+
+        //else
+
+        const queue = [];
+
+        const n = grid.length;
+
+        const m = grid[0].length;
+
+        const dist = [];
+
+        for (let i = 0; i < n; i++) {
+
+            const row = Array(m).fill(1e9);
+
+            dist.push(row);
+
+        }
+
+        dist[source[0]][source[1]] = 0;
+
+        // distance, row ,column
+
+        queue.push(tuple(0, source[0], source[1]));
+
+        const dr = [-1, -1, 0, 1, 1, 1, 0, -1];
+
+        const dc = [0, 1, 1, 1, 0, -1, -1, -1];
+
+        while (queue.length !== 0) {
+
+            const it = queue.shift();
+
+            const dis = it.first;
+
+            const r = it.second;
+
+            const c = it.third;
+
+            for (let i = 0; i < 8; i++) {
+
+                const newr = r + dr[i];
+
+                const newc = c + dc[i];
+
+                if (
+
+                    newr >= 0 &&
+
+                    newr < n &&
+
+                    newc >= 0 &&
+
+                    newc < m &&
+
+                    grid[newr][newc] == 0 &&
+
+                    dis + 1 < dist[newr][newc]
+
+                ) {
+
+                    dist[newr][newc] = 1 + dis;
+
+                    if (newr === destination[0] && newc === destination[1]) return dis + 1;
+
+                    queue.push(tuple(1 + dis, newr, newc));
+
+                }
+
+            }
+
+        }
+
+        return -2;
+
+    }
+
+};

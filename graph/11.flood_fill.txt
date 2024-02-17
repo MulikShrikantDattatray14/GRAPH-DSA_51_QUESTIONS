@@ -1,0 +1,136 @@
+An image is represented by an m x n integer grid image where image[i][j] represents the pixel value of the image.
+
+You are also given three integers sr, sc, and color. You should perform a flood fill on the image starting from the pixel image[sr][sc].
+
+To perform a flood fill, consider the starting pixel, plus any pixels connected 4-directionally to the starting pixel of the same color as the starting pixel, plus any pixels connected 4-directionally to those pixels (also with the same color), and so on. Replace the color of all of the aforementioned pixels with color.
+
+Return the modified image after performing the flood fill.
+
+ 
+
+Example 1:
+
+
+Input: image = [[1,1,1],[1,1,0],[1,0,1]], sr = 1, sc = 1, color = 2
+Output: [[2,2,2],[2,2,0],[2,0,1]]
+Explanation: From the center of the image with position (sr, sc) = (1, 1) (i.e., the red pixel), all pixels connected by a path of the same color as the starting pixel (i.e., the blue pixels) are colored with the new color.
+Note the bottom corner is not colored 2, because it is not 4-directionally connected to the starting pixel.
+Example 2:
+
+Input: image = [[0,0,0],[0,0,0]], sr = 0, sc = 0, color = 0
+Output: [[0,0,0],[0,0,0]]
+Explanation: The starting pixel is already colored 0, so no changes are made to the image.
+ 
+
+Constraints:
+
+m == image.length
+n == image[i].length
+1 <= m, n <= 50
+0 <= image[i][j], color < 216
+0 <= sr < m
+0 <= sc < n
+
+======================================================================================================================================================================================
+// same question solved using BFS
+
+function floodFill(image, sr, sc, newColor) {
+  const initialColor = image[sr][sc];
+  const rows = image.length;
+  const cols = image[0].length;
+
+  // Create a copy of the image to store the result
+  const ans = [...image];
+
+  // Directions for moving (up, right, down, left)
+  const delRow = [-1, 0, 1, 0];
+  const delCol = [0, 1, 0, -1];
+
+  // Initialize a queue for BFS
+  const queue = [];
+  queue.push([sr, sc]);
+
+  while (queue.length > 0) {
+    const [row, col] = queue.shift();
+    ans[row][col] = newColor;
+
+    for (let i = 0; i < 4; i++) {
+      const nrow = row + delRow[i];
+      const ncol = col + delCol[i];
+
+      if (
+        nrow >= 0 &&
+        nrow < rows &&
+        ncol >= 0 &&
+        ncol < cols &&
+        image[nrow][ncol] === initialColor &&
+        ans[nrow][ncol] !== newColor
+      ) {
+        queue.push([nrow, ncol]);
+      }
+    }
+  }
+
+  return ans;
+}
+
+// Test the function
+const image = [
+  [1, 1, 1],
+  [1, 1, 0],
+  [1, 0, 1],
+];
+const sr = 1,
+  sc = 1,
+  newColor = 2;
+const ans = floodFill(image, sr, sc, newColor);
+console.log(ans);
+
+
+=====================================================================================================================================================================================
+
+//SOLVED USING THE DFS
+
+const image = [
+  [1, 1, 1],
+  [1, 1, 0],
+  [1, 0, 1],
+];
+let sr = 1,
+  sc = 1,
+  newColor = 2;
+const ans = floodFill(image, sr, sc, newColor);
+console.log(ans);
+
+function dfs(row, col, ans, image, newColor, delRow, delCol, iniColor) {
+  ans[row][col] = newColor; // starting
+  const n = image.length;
+  const m = image[0].length;
+  for (let i = 0; i < 4; i++) {
+    const nrow = row + delRow[i];
+    const ncol = col + delCol[i];
+    if (
+      nrow >= 0 &&
+      nrow < n &&
+      ncol >= 0 &&
+      ncol < m &&
+      image[nrow][ncol] === iniColor &&
+      ans[nrow][ncol] !== newColor
+    ) {
+      dfs(nrow, ncol, ans, image, newColor, delRow, delCol, iniColor);
+    }
+  }
+}
+function floodFill(image, sr, sc, newColor) {
+  const initial_color = image[sr][sc];
+  // make a copy of a image matrix, so that we can make changes in the ans
+  const ans = [...image];
+  const delRow = [-1, 0, 1, 0];
+  const delCol = [0, 1, 0, -1];
+  dfs(sr, sc, ans, image, newColor, delRow, delCol, initial_color);
+  return ans;
+}
+
+
+
+=============================================================================================

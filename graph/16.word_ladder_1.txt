@@ -1,0 +1,179 @@
+Given are the two distinct words startWord and targetWord, and a list denoting wordList of unique words of equal lengths. Find the length of the shortest transformation sequence from startWord to targetWord.
+
+In this problem statement, we need to keep the following conditions in mind:
+
+A word can only consist of lowercase characters.
+Only one letter can be changed in each transformation.
+Each transformed word must exist in the wordList including the targetWord.
+startWord may or may not be part of the wordList
+Note:  If there’s no possible way to transform the sequence from startWord to targetWord return 0.
+
+
+Time Complexity: O(N * M * 26)
+
+Where N = size of wordList Array and M = word length of words present in the wordList..
+
+Note that, hashing operations in an unordered set takes O(1) time, but if you want to use set here, then the time complexity would increase by a factor of log(N) as hashing operations in a set take O(log(N)) time.
+
+Space Complexity:  O( N ) { for creating an unordered set and copying all values from wordList into it }
+
+Where N = size of wordList Array.
+
+======================================================================================================================================================================================
+USING BFS :
+---------------------------------------------
+class Node {
+  constructor(data) {
+    this.data = data;
+    this.next = null;
+  }
+}
+
+class LinkedListQueue {
+  constructor() {
+    this.front = null;
+    this.rear = null;
+    this.size = 0;
+  }
+
+  enqueue(item) {
+    const newNode = new Node(item);
+
+    if (this.isEmpty()) {
+      this.front = newNode;
+      this.rear = newNode;
+    } else {
+      this.rear.next = newNode;
+      this.rear = newNode;
+    }
+
+    this.size++;
+  }
+
+  dequeue() {
+    if (this.isEmpty()) {
+      console.log("Queue is empty");
+      return null;
+    }
+
+    const removedItem = this.front.data;
+    this.front = this.front.next;
+
+    if (this.front === null) {
+      this.rear = null;
+    }
+
+    this.size--;
+
+    return removedItem;
+  }
+
+  peek() {
+    if (this.isEmpty()) {
+      console.log("Queue is empty");
+      return null;
+    }
+
+    return this.front.data;
+  }
+
+  isEmpty() {
+    return this.size === 0;
+  }
+
+  getSize() {
+    return this.size;
+  }
+}
+//beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log","cog"]
+//[["hit","hot","dot","dog","cog"],["hit","hot","lot","log","cog"]]
+const startWord = "hit";
+const targetWord = "hit";
+const wordList = ["hit"];
+
+//beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log"]
+
+// const startWord = "hit";
+// const targetWord = "cog";
+// const wordList = ["hot", "dot", "dog", "lot", "log"];
+
+////https://leetcode.com/problems/word-ladder-ii/description/
+
+//Contrary to the previous problem, here we do not stop the traversal on the first occurrence of the targetWord, but rather continue it for as many occurrences of the word as possible as we need all the shortest possible sequences in order to reach the destination word. The only trick here is that we do not have to delete a particular word immediately from the wordList even if during the replacement of characters it matches with the transformed word. Instead, we delete it after the traversal for a particular level when completed which allows us to explore all possible paths. This allows us to discover multiple sequences in order to reach the targetWord involving similar words.
+
+const ans = findSequences(startWord, targetWord, wordList);
+//This problem uses the BFS traversal technique for finding out all the shortest possible transformation sequences by exploring all possible ways in which we can reach the targetWord.
+function findSequences(startWord, targetWord, wordList) {
+  //Queue: Define a queue data structure to store the level-wise formed sequences. The queue will be storing a List of strings, which will be representing the path till now. The last word in the list will be the last converted word.
+  //Hash set: Create a hash set to store the elements present in the word list to carry out the search and delete operations in O(1) time.
+  //Vector: Define a 1D vector ‘usedOnLevel’ to store the words which are currently being used for transformation on a particular level and a 2D vector ‘ans’ for storing all the shortest sequences of transformation.
+  let st = new Set(wordList);
+  let q = new LinkedListQueue(); // Use queue  class implementation using LinkedListQueue
+  // ls- stores each  individual path.
+  let ls = [startWord];
+  // we have to insert the insert sequence into the queue.
+  q.enqueue(ls);
+  //to store the words which are currently being used for transformation on a particular level
+  let usedOnLevel = [startWord];
+  let level = 0;
+  // ans returns the final answer - its a array of array .
+  let ans = [];
+
+  let cnt = 0;
+
+  while (q.isEmpty() == false) {
+    cnt++;
+    let vec = q.dequeue();
+
+    // level -1 will have one word and only one list
+    // level -2 will  have 2 word and only two lists .
+    // level-3 will have 3 words and only three lists .
+    // level-4 will have 4 words and only four lists .....and so on .....
+    // after working on the entire level
+    if (vec.length > level) {
+      level++;
+      // delete from  the set
+      for (let it of usedOnLevel) {
+        st.delete(it);
+      }
+    }
+    // take out the last word from the vec
+
+    let word = vec[vec.length - 1];
+
+    if (word === targetWord) {
+      if (ans.length === 0) {
+        // starting list inserted.
+        ans.push(vec);
+      } else if (ans[0].length === vec.length) {
+        //The line else if (ans[0].length === vec.length) {// if there is the presence of only one list is checking whether the current sequence (vec) has the same length as the sequences already present in the ans array. This check is performed when the target word (targetWord) is found in the word ladder.
+        ans.push(vec);
+      }
+    }
+
+    for (let i = 0; i < word.length; i++) {
+      for (let ch = "a".charCodeAt(0); ch <= "z".charCodeAt(0); ch++) {
+        let replacedCharArray = word.split("");
+        replacedCharArray[i] = String.fromCharCode(ch);
+        const replacedWord = replacedCharArray.join("");
+
+        if (st.has(replacedWord)) {
+          vec.push(replacedWord);
+          let temp = [...vec];
+          q.enqueue(temp);
+          usedOnLevel.push(replacedWord);
+          vec.pop();
+        }
+      }
+    }
+  }
+
+  return ans;
+}
+
+if (ans.length === 0) {
+  console.log([]);
+} else {
+  ans.sort((a, b) => a[0].localeCompare(b[0]));
+  console.log(ans);
+}

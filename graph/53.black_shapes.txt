@@ -1,0 +1,148 @@
+Problem Description : -
+
+Given character matrix A of dimensions N×M consisting of O's and X's, where O = white, X = black.
+
+Return the number of black shapes. A black shape consists of one or more adjacent X's (diagonals not included)
+
+
+
+Problem Constraints
+1 <= N, M <= 1000
+
+A[i][j] = 'X' or 'O'
+
+
+
+Input Format
+The First and only argument is character matrix A.
+
+
+
+Output Format
+Return a single integer denoting number of black shapes.
+
+
+
+Example Input
+Input 1:
+
+ A = [ [X, X, X], [X, X, X], [X, X, X] ]
+Input 2:
+
+ A = [ [X, O], [O, X] ]
+
+
+Example Output
+Output 1:
+
+ 1
+Output 2:
+
+ 2
+
+
+Example Explanation
+Explanation 1:
+
+ All X's belong to single shapes
+Explanation 2:
+
+ Both X's belong to different shapes
+//==================================================================
+
+A = ["X00", "00X", "X00"];
+
+let n = A.length;
+let final = [];
+for (let i = 0; i < n; i++) {
+  let each = A[i].split("");
+  final.push(each);
+}
+
+let ans = numberOfBlackShapes(final);
+console.log(ans);
+// USING BFS
+function Queue() {
+  var a = [],
+    b = 0;
+  this.getLength = function () {
+    return a.length - b;
+  };
+  this.isEmpty = function () {
+    return 0 == a.length;
+  };
+  this.enqueue = function (b) {
+    a.push(b);
+  };
+  this.dequeue = function () {
+    if (a.length === 0) return undefined;
+    const c = a[b++];
+    if (2 * b >= a.length) {
+      a = a.slice(b);
+      b = 0;
+    }
+    return c;
+  };
+
+  this.peek = function () {
+    return 0 < a.length ? a[b] : void 0;
+  };
+}
+
+function numberOfBlackShapes(A) {
+  const q = new Queue();
+  const N = A.length;
+  const M = A[0].length;
+  const vis = new Array(N);
+  for (let i = 0; i < N; i++) {
+    vis[i] = new Array(M).fill(0);
+  }
+
+  const delrow = [-1, 0, +1, 0];
+  const delcol = [0, +1, +0, -1];
+
+  let count = 0;
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < M; j++) {
+      if (A[i][j] === "X" && vis[i][j] === 0) {
+        bfs(i, j);
+        count++;
+      }
+    }
+  }
+
+  return count;
+}
+
+function isValid(row, col) {
+  return (
+    row >= 0 &&
+    row < N &&
+    col >= 0 &&
+    col < M &&
+    vis[row][col] === 0 &&
+    A[row][col] === "X"
+  );
+}
+
+function bfs(row, col) {
+  q.enqueue([row, col]);
+  vis[row][col] = 1;
+
+  while (!q.isEmpty()) {
+    const [r, c] = q.dequeue();
+
+    for (let i = 0; i < 4; i++) {
+      const nrow = r + delrow[i];
+      const ncol = c + delcol[i];
+
+      if (isValid(nrow, ncol)) {
+        q.enqueue([nrow, ncol]);
+        vis[nrow][ncol] = 1;
+      }
+    }
+  }
+}
+
+
+=====================================================================

@@ -1,0 +1,147 @@
+The bellman-Ford algorithm helps to find the shortest distance from the source node to all other nodes. But, we have already learned Dijkstra’s algorithm (Dijkstra’s algorithm article link) to fulfill the same purpose. Now, the question is how this algorithm is different from Dijkstra’s algorithm.
+
+While learning Dijkstra’s algorithm, we came across the following two situations, where Dijkstra’s algorithm failed:
+
+If the graph contains negative edges.
+If the graph has a negative cycle (In this case Dijkstra’s algorithm fails to minimize the distance, keeps on running, and goes into an infinite loop. As a result it gives TLE error).
+Negative Cycle: A cycle is called a negative cycle if the sum of all its weights becomes negative. The following illustration is an example of a negative cycle:
+
+
+Bellman-Ford’s algorithm successfully solves these problems. It works fine with negative edges as well as it is able to detect if the graph contains a negative cycle. But this algorithm is only applicable for directed graphs. In order to apply this algorithm to an undirected graph, we just need to convert the undirected edges into directed edges like the following:
+
+
+Explanation: An undirected edge between nodes u and v necessarily means that there are two opposite-directed edges, one towards node u and the other towards node v. So the above conversion is valid.
+
+After converting the undirected graph into a directed graph following the above method, we can use the Bellman-Ford algorithm as it is. 
+
+
+
+In the Bellman-Ford algorithm, the starting node can be any node in the graph. The algorithm is designed to find the shortest paths from a single source node to all other nodes in a weighted graph, regardless of which node is chosen as the source.
+
+In your provided code, the starting node is denoted by S, which stands for the source node. This source node can indeed be any node in the graph, as long as it's within the range of valid node indices (i.e., between 0 and V - 1, inclusive, where V is the total number of nodes in the graph).
+
+So, yes, in the Bellman-Ford algorithm, the choice of the starting node is flexible and can be any node in the graph.
+
+-----------------------------------------------------------------------------------
+
+How to detect a negative cycle in the graph?
+
+We know if we keep on rotating inside a negative cycle, the path weight will be decreased in every iteration. But according to our intuition, we should have minimized all the distances within N-1 iterations(that means, after N-1 iterations no relaxation of edges is possible). 
+In order to check the existence of a negative cycle, we will relax the edges one more time after the completion of N-1 iterations. And if in that Nth iteration, it is found that further relaxation of any edge is possible, we can conclude that the graph has a negative cycle. Thus, the Bellman-Ford algorithm detects negative cycles.
+====================================================================================================================================================================
+// for directed graph :-
+
+let V = 6; //nodes
+let edges = [
+  [3, 2, 6],
+  [5, 3, 1],
+  [0, 1, 5],
+  [1, 5, -3],
+  [1, 2, -2],
+  [3, 4, -2],
+  [2, 4, 3],
+];
+let S = 0; // Change the starting node to 2//[ 100000000, 100000000, 0, 100000000, 3, 100000000 ]
+//In the output [ 100000000, 100000000, 0, 100000000, 3, 100000000 ], each element represents the shortest distance from the starting node (which is node 2 in this case) to the corresponding node in the graph.
+
+//Here's what each element represents:
+
+// Index 0: Shortest distance from node 2 to node 0.
+// Index 1: Shortest distance from node 2 to node 1.
+// Index 2: Shortest distance from node 2 to node 2 (which is always 0, as it's the starting node itself).
+// Index 3: Shortest distance from node 2 to node 3.
+// Index 4: Shortest distance from node 2 to node 4.
+// Index 5: Shortest distance from node 2 to node 5.
+// Looking at the values:
+
+// The distance from node 2 to node 0 is infinity (1e8), indicating that there's no path from node 2 to node 0 reachable in the graph.
+// The distance from node 2 to node 1 is infinity, indicating that there's no path from node 2 to node 1 reachable in the graph.
+// The distance from node 2 to node 2 is 0, which is expected since it's the starting node.
+// The distance from node 2 to node 3 is infinity, indicating that there's no path from node 2 to node 3 reachable in the graph.
+// The distance from node 2 to node 4 is 3, which means the shortest path from node 2 to node 4 has a length of 3.
+// The distance from node 2 to node 5 is infinity, indicating that there's no path from node 2 to node 5 reachable in the graph.
+// So, in summary, the output represents the shortest distances from node 2 to all other nodes in the graph, with infinity indicating that there's no reachable path.
+
+const dist = bellmanFord(V, edges, S);
+console.log(dist);
+
+function bellmanFord(V, edges, S) {
+  let dist = new Array(V).fill(1e8);
+  dist[S] = 0;
+
+  for (let i = 0; i < V - 1; i++) {
+    //iterate total_nodes-1 times
+    for (let j = 0; j < edges.length; j++) {
+      const u = edges[j][0];
+      const v = edges[j][1];
+      const wt = edges[j][2];
+      if (dist[u] !== 1e8 && dist[u] + wt < dist[v]) {
+        dist[v] = dist[u] + wt;
+      }
+    }
+  }
+
+  for (let j = 0; j < edges.length; j++) {
+    const u = edges[j][0];
+    const v = edges[j][1];
+    const wt = edges[j][2];
+    if (dist[u] !== 1e8 && dist[u] + wt < dist[v]) {
+      return [-1];
+    }
+  }
+  return dist;
+}
+
+
+====================================================================================================================================================================
+// for undirected graph :-
+-----------------------------
+
+function bellmanFord(V, edges, S) {
+  const dist = new Array(V).fill(Infinity);
+  dist[S] = 0;
+
+  // Relax edges repeatedly
+  for (let i = 0; i < V - 1; i++) {
+    for (const [u, v, wt] of edges) {
+      if (dist[u] !== Infinity && dist[u] + wt < dist[v]) {
+        dist[v] = dist[u] + wt;
+      }
+      if (dist[v] !== Infinity && dist[v] + wt < dist[u]) {
+        dist[u] = dist[v] + wt;
+      }
+    }
+  }
+  console.log(dist);
+
+  // Check for negative cycles
+  for (const [u, v, wt] of edges) {
+    if (dist[u] !== Infinity && dist[u] + wt < dist[v]) {
+      return [-1]; // Negative cycle detected
+    }
+  }
+
+  return dist;
+}
+
+// Example usage:
+const V = 5; // Number of vertices
+const edges = [
+  [0, 1, 6],
+  [0, 3, 7],
+  [1, 2, 5],
+  [1, 3, 8],
+  [1, 4, -4],
+  [2, 1, -2],
+  [3, 2, -3],
+  [3, 4, 9],
+  [4, 0, 2],
+  [4, 2, 7],
+]; // Format: [fromNode, toNode, weight]
+const S = 2; // Source vertex
+
+const shortestDistances = bellmanFord(V, edges, S);
+console.log(shortestDistances); // Output the shortest distances
+
+
+=============================================================================================================================================================================

@@ -1,0 +1,101 @@
+
+Problem Descriptionm:-
+
+Given a Tree of A nodes having A-1 edges. Each node is numbered from 1 to A where 1 is the root of the tree.
+
+You are given Q queries. In each query, you will be given two integers L and X. Find the value of such node which lies at level L mod (MaxDepth + 1) and has value greater than or equal to X.
+
+Answer to the query is the smallest possible value or -1, if all the values at the required level are smaller than X.
+
+NOTE:
+
+Level and Depth of the root is considered as 0.
+It is guaranteed that each edge will be connecting exactly two different nodes of the tree.
+Please read the input format for more clarification.
+
+
+Problem Constraints
+
+2 <= A, Q(size of array E and F) <= 105
+
+1 <= B[i], C[i] <= A
+
+1 <= D[i], E[i], F[i] <= 106
+
+=================================================================================
+
+A = 5;
+B = [1, 4, 3, 1];
+C = [5, 2, 4, 4];
+D = [7, 38, 27, 37, 1];
+E = [1, 1, 2];
+F = [32, 18, 26];
+const maxn = 100009;
+let n = 0;
+let q = 0;
+let mx = 0;
+let val = new Array(maxn);
+let adj = new Array(maxn);
+let lvl = new Array(maxn);
+
+let ans = solve(A, B, C, D, E, F);
+console.log(ans);
+
+function dfs(node, parent, depth) {
+  mx = Math.max(mx, depth);
+  lvl[depth].push(val[node]);
+  for (let j = 0; j < adj[node].length; j++) {
+    let i = adj[node][j];
+    if (i == parent) continue;
+    dfs(i, node, depth + 1);
+  }
+}
+
+function lowerBound(a, low, high, element) {
+  while (low < high) {
+    let middle = low + ((high - low) >> 1);
+    if (element > a[middle]) {
+      low = middle + 1;
+    } else {
+      high = middle;
+    }
+  }
+  return low;
+}
+
+function solve(A, B, C, D, E, F) {
+  for (let i = 0; i < maxn; i++) {
+    adj[i] = [];
+    lvl[i] = [];
+  }
+  //mx = 0;
+  n = A;
+  // maximum level needed
+  q = F.length;
+  for (let i = 0; i < n; i++) val[i + 1] = D[i];
+
+  for (let i = 0; i < n - 1; i++) {
+    adj[B[i]].push(C[i]);
+    adj[C[i]].push(B[i]);
+  }
+  //So, the dfs(1, 1, 0); call is starting the depth-first search from node 1, with its parent set to 1, and at the initial depth of 0. The depth-first search then explores the graph recursively from this starting point.
+  dfs(1, 1, 0);
+
+  // sort the level
+  for (let i = 0; i < maxn; i++) {
+    lvl[i].sort((a, b) => a - b);
+  }
+  let res = new Array(q);
+  for (let i = 0; i < q; i++) {
+    let l = E[i];
+    let x = F[i];
+    l = l % (mx + 1);
+    let it = lowerBound(lvl[l], 0, lvl[l].length, x);
+    if (it == lvl[l].length) res[i] = -1;
+    else res[i] = lvl[l][it];
+  }
+  return res;
+}
+
+
+==============================================================================

@@ -1,0 +1,88 @@
+Problem Statement: 
+
+A directed graph of V vertices and E edges is given in the form of an adjacency list adj. Each node of the graph is labeled with a distinct integer in the range 0 to V – 1. A node is a terminal node if there are no outgoing edges. A node is a safe node if every possible path starting from that node leads to a terminal node. You have to return an array containing all the safe nodes of the graph. The answer should be sorted in ascending order.
+
+
+======================================================================================================================================================================================
+// using BFS , topological order.i.e kahn topological sort algorithm: '
+// logic : reverse the graph and then apply the bfs topological sort .
+// logic : reverse the graph and then apply the bfs topological sort .
+function Queue() {
+  var a = [],
+    b = 0;
+  this.getLength = function () {
+    return a.length - b;
+  };
+  this.isEmpty = function () {
+    return 0 == a.length;
+  };
+  this.enqueue = function (b) {
+    a.push(b);
+  };
+  this.dequeue = function () {
+    if (a.length === 0) return undefined;
+    const c = a[b++];
+    if (2 * b >= a.length) {
+      a = a.slice(b);
+      b = 0;
+    }
+    return c;
+  };
+
+  this.peek = function () {
+    return 0 < a.length ? a[b] : void 0;
+  };
+}
+let adj = [[1, 2], [2, 3], [5], [0], [5], [], []]; //[ 2, 4, 5, 6 ]
+let V = adj.length;
+
+// let adj = [[1, 2, 3, 4], [1, 2], [3, 4], [0, 4], []]; //[4]
+// let V = adj.length;
+const safeNodes = eventualSafeNodes(V, adj);
+console.log(safeNodes);
+
+function eventualSafeNodes(V, adj) {
+  const adjRev = []; // reversing
+  for (let i = 0; i < V; i++) {
+    adjRev.push([]);
+  }
+  const indegree = new Array(V).fill(0);
+  // reverse and count the indegree
+  for (let i = 0; i < V; i++) {
+    for (let j = 0; j < adj[i].length; j++) {
+      const it = adj[i][j];
+      adjRev[it].push(i);
+    }
+  }
+
+  for (let i = 0; i < V; i++) {
+    for (let j = 0; j < adjRev[i].length; j++) {
+      
+      indegree[adjRev[i][j]]++;
+    }
+  }
+  const q = new Queue();
+  const safeNodes = [];
+  for (let i = 0; i < V; i++) {
+    if (indegree[i] === 0) {
+      q.enqueue(i);
+    }
+  }
+  while (q.getLength() > 0) {
+    const node = q.dequeue();
+    safeNodes.push(node);
+    for (let j = 0; j < adjRev[node].length; j++) {
+      const it = adjRev[node][j];
+      indegree[it]--;
+      if (indegree[it] === 0) {
+        q.enqueue(it);
+      }
+    }
+  }
+  safeNodes.sort((a, b) => a - b);
+  return safeNodes;
+}
+
+
+===================================================================
+//way-2 : using DFS - https://www.youtube.com/watch?v=uRbJ1OF9aYM

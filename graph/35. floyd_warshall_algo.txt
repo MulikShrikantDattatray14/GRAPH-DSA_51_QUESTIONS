@@ -1,0 +1,65 @@
+In this article, we will be discussing Floyd Warshall Algorithm which is very much different from the two which we have previously learned: Dijkstra’s Shortest Path algorithm and the Bellman-Ford algorithm. 
+
+Dijkstra’s Shortest Path algorithm and Bellman-Ford algorithm are single-source shortest path algorithms where we are given a single source node and are asked to find out the shortest path to every other node from that given source. But in the Floyd Warshall algorithm, we need to figure out the shortest distance from each node to every other node.
+
+Basically, the Floyd Warshall algorithm is a multi-source shortest path algorithm and it helps to detect negative cycles as well. The shortest path between node u and v necessarily means the path(from u to v) for which the sum of the edge weights is minimum.
+
+In Floyd Warshall’s algorithm, we need to check every possible path going via each possible node. And after checking every possible path, we will figure out the shortest path(a kind of brute force approach to find the shortest path).
+
+==============================================================================================================================================================================
+
+// we need to figure out the shortest distance from each node to every other node.i.e  check every possible path going via each possible node.
+//In Floyd Warshall’s algorithm, we need to check every possible path going via each possible node. And after checking every possible path, we will figure out the shortest path(a kind of brute force approach to find the shortest path)
+const V = 4;
+const matrix = [];
+for (let i = 0; i < V; i++) {
+  matrix.push(new Array(V).fill(-1));
+}
+
+matrix[0][1] = 2;
+matrix[1][0] = 1;
+matrix[1][2] = 3;
+matrix[3][0] = 3;
+matrix[3][1] = 5;
+matrix[3][2] = 4;
+
+//From the above example we can derive the following formula:
+//matrix[i][j] =min(matrix[i][j], matrix[i ][k]+matrix[k][j]), where i = source node, j = destination node, and k = the node via which we are reaching from i to j.
+
+//Here we will calculate dist[i][j] for every possible node k (k = 0, 1….V, where V = no. of nodes), and will select the minimum value as our result.
+
+shortestDistance(matrix);
+function shortestDistance(matrix) {
+  const n = matrix.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      if (matrix[i][j] === -1) {
+        matrix[i][j] = 1e9;
+      }
+      if (i === j) matrix[i][j] = 0;
+    }
+  }
+
+  for (let k = 0; k < n; k++) {
+    // for each matrix iteration ,we will have only one node (K), through which all path passes.
+    // k - passing through all the nodes
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        matrix[i][j] = Math.min(matrix[i][j], matrix[i][k] + matrix[k][j]);
+      }
+    }
+  }
+
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      if (matrix[i][j] === 1e9) {
+        matrix[i][j] = -1;
+      }
+    }
+  }
+}
+
+console.log(matrix);
+
+
+======================================================================================

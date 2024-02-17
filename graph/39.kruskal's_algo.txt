@@ -1,0 +1,162 @@
+
+Problem Statement: 
+
+Given a weighted, undirected, and connected graph of V vertices and E edges. The task is to find the sum of weights of the edges of the Minimum Spanning Tree.
+
+Example 1:
+
+Input Format: 
+V = 5, edges = { {0, 1, 2}, {0, 3, 6}, {1, 2, 3}, {1, 3, 8}, {1, 4, 5}, {4, 2, 7}}
+
+Result: 16
+Explanation: The minimum spanning tree for the given graph is drawn below:
+MST = {(0, 1), (0, 3), (1, 2), (1, 4)}
+
+Example 2:
+
+Input Format: 
+V = 5, 
+edges = { {0, 1, 2}, {0, 2, 1}, {1, 2, 1}, {2, 3, 2}, {3, 4, 1}, {4, 2, 2}}
+
+Result: 5
+Explanation: The minimum spanning tree is drawn below:
+MST = {(0, 2), (1, 2), (2, 3), (3, 4)}
+
+
+=====================================================================================
+
+Now, we know Disjoint Set provides two methods named findUPar()(This function helps to find the ultimate parent of a particular node) and Union(This basically helps to add the edges between two nodes). To know more about these functionalities, do refer to the article on Disjoint Set.
+
+The algorithm steps are as follows:
+
+1.First, we need to extract the edge information(if not given already) from the given adjacency list in the format of (wt, u, v) where u is the current node, v is the adjacent node and wt is the weight of the edge between node u and v and we will store the tuples in an array.
+2.Then the array must be sorted in the ascending order of the weights so that while iterating we can get the edges with the minimum weights first.
+3.After that, we will iterate over the edge information, and for each tuple, we will apply the  following operation:
+3.1.First, we will take the two nodes u and v from the tuple and check if the ultimate parents of both nodes are the same or not using the findUPar() function provided by the Disjoint Set data structure.
+3.2.If the ultimate parents are the same, we need not do anything to that edge as there already exists a path between the nodes and we will continue to the next tuple.
+3.3.If the ultimate parents are different, we will add the weight of the edge to our final answer(i.e. mstWt variable used in the following code) and apply the union operation(i.e. either unionBySize(u, v) or unionByRank(u, v)) with the nodes u and v. The union operation is also provided by the Disjoint Set.
+4.Finally, we will get our answer (in the mstWt variable as used in the following code) successfully.
+==========================================================================================
+class DisjointSet {
+  constructor(n) {
+    this.rank = Array(n + 1).fill(0);
+    this.parent = Array.from({ length: n + 1 }, (_, i) => i);
+    this.size = Array(n + 1).fill(1);
+  }
+
+  findUPar(node) {
+    if (node === this.parent[node]) {
+      return node;
+    }
+    const ulp = this.findUPar(this.parent[node]);
+    this.parent[node] = ulp;
+    return this.parent[node];
+  }
+
+  unionByRank(u, v) {
+    const ulp_u = this.findUPar(u);
+    const ulp_v = this.findUPar(v);
+    if (ulp_u === ulp_v) return;
+    if (this.rank[ulp_u] < this.rank[ulp_v]) {
+      this.parent[ulp_u] = ulp_v;
+    } else if (this.rank[ulp_v] < this.rank[ulp_u]) {
+      this.parent[ulp_v] = ulp_u;
+    } else {
+      this.parent[ulp_v] = ulp_u;
+      const rankU = this.rank[ulp_u];
+      this.rank[ulp_u] = rankU + 1;
+    }
+  }
+
+  unionBySize(u, v) {
+    const ulp_u = this.findUPar(u);
+    const ulp_v = this.findUPar(v);
+    if (ulp_u === ulp_v) return;
+    if (this.size[ulp_u] < this.size[ulp_v]) {
+      this.parent[ulp_u] = ulp_v;
+      this.size[ulp_v] += this.size[ulp_u];
+    } else {
+      this.parent[ulp_v] = ulp_u;
+      this.size[ulp_u] += this.size[ulp_v];
+    }
+  }
+}
+
+//Kruskal's algorithm is a greedy algorithm used for finding the minimum spanning tree (MST) of a connected, undirected graph. The minimum spanning tree is a subgraph that includes all the vertices of the original graph and has the minimum possible total edge weight.
+
+//Here's a brief overview of Kruskal's algorithm:
+
+//1.Sort Edges: Start with a graph consisting of vertices and edges. Sort all the edges in non-decreasing order based on their weights.
+
+//2.Initialize Forest: Create a forest where each vertex is initially in its own disjoint set. The disjoint sets represent individual trees.
+
+//3.Iterate through Edges: Begin iterating through the sorted edges. For each edge, check if the vertices it connects are in the same disjoint set. If they are not, add the edge to the minimum spanning tree and merge the disjoint sets of the two vertices.
+
+//4.Continue Iterating: Repeat step 3 until all vertices are in a single disjoint set or until the minimum spanning tree has (n-1) edges, where n is the number of vertices in the original graph.
+
+//5.Output MST: The result is the minimum spanning tree of the graph.
+
+//6.The key idea behind Kruskal's algorithm is to always select the smallest edge that does not form a cycle in the current set of selected edges. By maintaining disjoint sets, the algorithm ensures that adding an edge does not create a cycle in the MST. Kruskal's algorithm is efficient and works well for sparse graphs with a large number of edges.
+
+let V = 5;
+let edges = [
+  [0, 1, 2],
+  [0, 3, 6],
+  [1, 2, 3],
+  [1, 3, 8],
+  [1, 4, 5],
+  [4, 2, 7],
+]; //16
+// const V = 5;
+// const edges = [
+//   [0, 1, 2],
+//   [0, 2, 1],
+//   [1, 2, 1],
+//   [2, 3, 2],
+//   [3, 4, 1],
+//   [4, 2, 2],
+// ];//5
+const adj = [];
+for (let i = 0; i < V; i++) {
+  adj.push([]);
+}
+
+for (let i = 0; i < edges.length; i++) {
+  const u = edges[i][0];
+  const v = edges[i][1];
+  const w = edges[i][2];
+
+  adj[u].push([v, w]);
+  adj[v].push([u, w]);
+}
+const ds = new DisjointSet(V);
+const sortedEdges = [];
+for (let i = 0; i < V; i++) {
+  for (let j = 0; j < adj[i].length; j++) {
+    const adjNode = adj[i][j][0];
+    const wt = adj[i][j][1];
+    const node = i;
+    const temp = { src: node, dest: adjNode, weight: wt };
+    sortedEdges.push(temp);
+  }
+}
+//Sort all the edges in non-decreasing order based on their weights.
+sortedEdges.sort((a, b) => a.weight - b.weight);
+//Iterate through Edges:- Begin iterating through the sorted edges. For each edge, check if the vertices it connects are in the same disjoint set. If they are not, add the edge to the minimum spanning tree and merge the disjoint sets of the two vertices.
+
+//Continue Iterating:- Repeat step 3 until all vertices are in a single disjoint set or until the minimum spanning tree has (n-1) edges, where n is the number of vertices in the original graph.
+
+let mstWt = 0;
+for (let i = 0; i < sortedEdges.length; i++) {
+  const wt = sortedEdges[i].weight;
+  const u = sortedEdges[i].src;
+  const v = sortedEdges[i].dest;
+  // if the ultimate parent of u and v is not same , merge them and take the sum of those two .
+  if (ds.findUPar(u) !== ds.findUPar(v)) {
+    mstWt += wt;
+    ds.unionBySize(u, v);
+  }
+}
+console.log("The sum of all the edge weights: " + mstWt);
+
+//================================================================================================================================================================================================================================

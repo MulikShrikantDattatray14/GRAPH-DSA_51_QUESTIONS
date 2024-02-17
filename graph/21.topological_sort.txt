@@ -1,0 +1,272 @@
+Problem Statement: Given a Directed Acyclic Graph (DAG) with V vertices and E edges, Find any Topological Sorting of that Graph.
+
+Note: In topological sorting, node u will always appear before node v if there is a directed edge from node u towards node v(u -> v).
+
+Time Complexity: O(V+E)+O(V), where V = no. of nodes and E = no. of edges. There can be at most V components. So, another O(V) time complexity.
+
+Space Complexity: O(2N) + O(N) ~ O(2N): O(2N) for the visited array and the stack carried during DFS calls and O(N) for recursive stack space, where N = no. of nodes.
+
+//================================================================================================================================================================================================================================
+ way-1 : using the DFS and stack : 
+ ---------------------------------------------------------------------------------------------------------------
+Intuition:-
+
+Since we are inserting the nodes into the stack after the completion of the traversal, we are making sure, there will be no one who appears afterward but may come before in the ordering as everyone during the traversal would have been inserted into the stack. 
+
+-----------------------------------------------------------------------------------------------------------
+
+// topological sort works only for Directed Acyclic Graph(DAG)
+//In topological sorting, node u will always appear before node v if there is a directed edge from node u towards node v(u -> v).
+class Stack {
+  constructor() {
+    this.items = [];
+  }
+
+  // Push element onto the stack
+  push(element) {
+    this.items.push(element);
+  }
+
+  // Pop element from the stack
+  pop() {
+    if (this.isEmpty()) {
+      return "Underflow";
+    }
+    return this.items.pop();
+  }
+
+  // Peek at the top element of the stack without removing it
+  peek() {
+    if (this.isEmpty()) {
+      return "Stack is empty";
+    }
+    return this.items[this.items.length - 1];
+  }
+
+  // Check if the stack is empty
+  isEmpty() {
+    return this.items.length === 0;
+  }
+
+  // Get the size of the stack
+  size() {
+    return this.items.length;
+  }
+
+  // Print the stack elements
+  print() {
+    console.log(this.items);
+  }
+}
+//Topological sorting only exists in Directed Acyclic Graph (DAG). If the nodes of a graph are connected through directed edges and the graph does not contain a cycle, it is called a directed acyclic graph(DAG).
+
+//The topological sorting of a directed acyclic graph is nothing but the linear ordering of vertices such that if there is an edge between node u and v(u -> v), node u appears before v in that ordering.
+
+//Now, let’s understand Why topological sort only exists in DAG:
+
+//Case 1 (If the edges are undirected): If there is an undirected edge between node u and v, it signifies that there is an edge from node u to v(u -> v) as well as there is an edge from node v to u(v -> u). But according to the definition of topological sorting, it is practically impossible to write such ordering where u appears before v and v appears before u simultaneously. So, it is only possible for directed edges.
+//Case 2(If the directed graph contains a cycle): The following directed graph contains a cycle:
+
+////If we try to get topological sorting of this cyclic graph, for edge 1->2, node 1 must appear before 2, for edge 2->3, node 2 must appear before 3, and for edge 3->1, node 3 must appear before 1 in the linear ordering. But such ordering is not possible as there exists a cyclic dependency in the graph. Thereby, topological sorting is only possible for a directed acyclic graph.
+
+//Approach:-
+
+//We will be solving it using the DFS traversal technique. DFS goes in-depth, i.e., traverses all nodes by going ahead, and when there are no further nodes to traverse in the current path, then it backtracks on the same path and traverses other unvisited nodes.
+
+//The algorithm steps are as follows:
+
+//1.We must traverse all components of the graph.
+//2.Make sure to carry a visited array(all elements are initialized to 0) and a stack data structure, where we are going to store the nodes after completing the DFS call.
+//3.In the DFS call, first, the current node is marked as visited. Then DFS call is made for all its adjacent nodes.
+//4.After visiting all its adjacent nodes, DFS will backtrack to the previous node and meanwhile, the current node is pushed into the stack.
+//5.Finally, we will get the stack containing one of the topological sortings of the graph.
+
+// Example usage:
+//const stack = new Stack();
+
+// let edges = [
+//   [5, 0],
+//   [4, 0],
+//   [4, 1],
+//   [3, 1],
+//   [2, 3],
+//   [5, 2],
+// ]; //5 4 2 3 1 0
+// const V = 6; // nodes
+let edges = [
+  [1, 0],
+  [3, 0],
+  [2, 0],
+]; //3 2 1 0
+let V = 4;
+
+const adj = [];
+for (let i = 0; i <= V; i++) {
+  adj.push([]);
+}
+for (const [u, v] of edges) {
+  adj[u].push(v);
+}
+
+const result = topoSort(V, adj);
+console.log(result);
+
+function topoSort(V, adj) {
+  const vis = new Array(V).fill(0);
+  const stack = new Stack();
+  for (let i = 0; i < V; i++) {
+    if (vis[i] === 0) {
+      dfs(i, vis, stack, adj);
+    }
+  }
+
+  const ans = new Array(V);
+  let index = 0;
+  while (stack.size() > 0) {
+    // store
+    ans[index++] = stack.peek();
+    // remove
+    stack.pop();
+  }
+  return ans;
+}
+
+function dfs(node, vis, stack, adj) {
+  // very first node gets inserted into the stack at last.
+  vis[node] = 1;
+  for (let it of adj[node]) {
+    if (vis[it] === 0) dfs(it, vis, stack, adj);
+  }
+  //In the DFS call, first, the current node is marked as visited. Then DFS call is made for all its adjacent nodes.
+  //and very important - After visiting all its adjacent nodes, DFS will backtrack to the previous node and meanwhile, the current node is pushed into the stack.
+  // the first element that gets pushed into the stack is the last visted element , and 2nd element that gets pushed into the stack is the second last visited element . so that order gets maintained as per the edges given.
+  // // very first node gets inserted into the stack at last.
+  stack.push(node);
+}
+
+
+=====================================================================================================================================================================================
+Topological sort using BFS (kahn algorithm) : i.e using the queue and BFS :-
+-----------------------------------------------
+
+
+//Previously, we solved this question using the DFS traversal technique. But in this article,  we will apply the BFS(Breadth First Search) traversal technique. Breadth First Search or BFS is a traversal technique where we visit the nodes level-wise, i.e., it visits the same level nodes simultaneously, and then moves to the next level.
+
+//Initial Configuration:
+
+//Indegree Array: Initially all elements are set to 0. Then, We will count the incoming edges for a node and store it in this array. For example, if indegree of node 3 is 2, indegree[3] = 2.
+
+//Queue: As we will use BFS, a queue is required. Initially, the node with indegree 0 will be pushed into the queue.
+
+//Answer array: Initially empty and is used to store the linear ordering.
+
+//The algorithm steps are as follows:
+
+//First, we will calculate the indegree of each node and store it in the indegree array. We can iterate through the given adj list, and simply for every node u->v, we can increase the indegree of v by 1 in the indegree array.
+//Initially, there will be always at least a single node whose indegree is 0. So, we will push the node(s) with indegree 0 into the queue.
+//Then, we will pop a node from the queue including the node in our answer array, and for all its adjacent nodes, we will decrease the indegree of that node by one. For example, if node u that has been popped out from the queue has an edge towards node v(u->v), we will decrease indegree[v] by 1.
+//After that, if for any node the indegree becomes 0, we will push that node again into the queue.
+//We will repeat steps 3 and 4 until the queue is completely empty. Finally, completing the BFS we will get the linear ordering of the nodes in the answer array.
+
+//Let’s understand how to find the indegree(s):
+
+//By visiting the adjacency list, we can find out the indegrees for each node. For example, if node 3 is an adjacent node of node 2, we will just increase indegree[3] by 1 as the adjacency list suggests that node 3 has an incoming edge from node 2.
+
+//Note: If you wish to see the dry run of the above approach, you can watch the video attached to this article.
+
+//Let’s quickly understand the algorithm using the below graph:
+
+//1.First, we will calculate the indegrees for all 6 nodes. For node 0, it will be 2, for node 1, it will also be 2 and similarly, we will calculate for other nodes. The indegree array will look like this: {2, 2, 1, 1, 0, 0}.
+//2.Next, the queue will be pushed with nodes 4 and 5 as their indegrees are 0. Then we will start the BFS.
+//3.First, node 4 will be popped out and kept in the answer array, and for all its adjacent nodes 0 and 1, the indegrees will be decreased by 1(indegree array: {1, 1, 1, 1, 0, 0} ). No nodes will be pushed into the queue, as there are no other nodes with indegree 0.
+//4.Now, similarly, node 5 will be popped out and indegree[0] and indegree[2] will decrease by 1 keeping node 5 in the answer array. Now, we will push nodes 0 and 2 into the queue as their indegree has become 0(indegree array: {0, 1, 0, 1, 0, 0}).
+//5.Then node 0 will be popped out and as node 0 has no adjacent nodes it will be simply kept in the answer array.
+//6.Next, node 2 will be popped out and kept in the answer array while decreasing indegree[3] by 1(indegree array: {0, 1, 0, 0, 0, 0}). Now indegree[3] is 0 and so node 3 is pushed into the queue.
+//7.Next, node 3 is popped out and kept in the answer array and indegree[1] is decreased by 1 as node 1 is the adjacent node of node 3(indegree array: {0, 0, 0, 0, 0, 0}). Now indegree[1] is 0 and so node 1 is pushed into the queue.
+//8.Lastly, node 1 will be popped out and kept in the answer array, as node 1 has no adjacent nodes. Now, the BFS is completed for the graph.
+//9.Finally, the answer array will look like: {4, 5, 0, 2, 3, 1}.
+//10.Note: Points to remember when a node is popped out, indegrees for all its adjacent nodes are decreased by one and if any of them becomes 0, we push that node into the queue. Meanwhile, we include the current node in the answer immediately after it is popped out of the queue.
+
+function Queue() {
+  var a = [],
+    b = 0;
+  this.getLength = function () {
+    return a.length - b;
+  };
+  this.isEmpty = function () {
+    return 0 == a.length;
+  };
+  this.enqueue = function (b) {
+    a.push(b);
+  };
+  this.dequeue = function () {
+    if (a.length === 0) return undefined;
+    const c = a[b++];
+    if (2 * b >= a.length) {
+      a = a.slice(b);
+      b = 0;
+    }
+    return c;
+  };
+
+  this.peek = function () {
+    return 0 < a.length ? a[b] : void 0;
+  };
+}
+let edges = [
+  [2, 3],
+  [3, 1],
+  [4, 0],
+  [4, 1],
+  [5, 0],
+  [5, 2],
+];
+// V is the total
+let V = 6;
+
+const adj = [];
+for (let i = 0; i < V; i++) {
+  adj.push([]);
+}
+for (const [u, v] of edges) {
+  adj[u].push(v);
+}
+
+let ans = topoSort(V, adj);
+console.log(ans);
+
+function topoSort(V, adj) {
+  let q = new Queue();
+  let indegree = new Array(V).fill(0);
+  // work on indegree
+  for (let i = 0; i < V; i++) {
+    //nodes
+    for (let j = 0; j < adj[i].length; j++) {
+      // adjacents of the node
+      indegree[adj[i][j]]++;
+    }
+  }
+  //Initially, there will be always at least a single node whose indegree is 0. So, we will push the node(s) with indegree 0 into the queue.
+
+  for (let i = 0; i < V; i++) {
+    // the element with 0 incoming is inserted first into the queue.and as it has no incoming , all the other nodes will be ahead of it .
+    if (indegree[i] === 0) {
+      q.enqueue(i);
+    }
+  }
+  let topo = [];
+  let i = 0;
+  while (q.getLength() !== 0) {
+    //Then, we will pop a node from the queue including the node in our answer array, and for all its adjacent nodes, we will decrease the indegree of that node by one.
+    let node = q.dequeue();
+    topo[i] = node;
+    i++;
+    for (let it of adj[node]) {
+      indegree[it]--;
+      if (indegree[it] === 0) {
+        q.enqueue(it);
+      }
+    }
+  }
+  return topo;
+}

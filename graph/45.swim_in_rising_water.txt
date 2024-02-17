@@ -1,0 +1,132 @@
+class DisjointSet {
+  constructor(n) {
+    this.rank = new Array(n + 1).fill(0);
+    this.parent = [...Array(n + 1).keys()];
+    this.size = new Array(n + 1).fill(1);
+  }
+
+  findUPar(node) {
+    if (node === this.parent[node]) {
+      return node;
+    }
+    const ulp = this.findUPar(this.parent[node]);
+    this.parent[node] = ulp;
+    return this.parent[node];
+  }
+
+  unionByRank(u, v) {
+    const ulp_u = this.findUPar(u);
+    const ulp_v = this.findUPar(v);
+    if (ulp_u === ulp_v) return;
+    if (this.rank[ulp_u] < this.rank[ulp_v]) {
+      this.parent[ulp_u] = ulp_v;
+    } else if (this.rank[ulp_v] < this.rank[ulp_u]) {
+      this.parent[ulp_v] = ulp_u;
+    } else {
+      this.parent[ulp_v] = ulp_u;
+      const rankU = this.rank[ulp_u];
+      this.rank[ulp_u] = rankU + 1;
+    }
+  }
+
+  unionBySize(u, v) {
+    const ulp_u = this.findUPar(u);
+    const ulp_v = this.findUPar(v);
+    if (ulp_u === ulp_v) return;
+    if (this.size[ulp_u] < this.size[ulp_v]) {
+      this.parent[ulp_u] = ulp_v;
+      this.size[ulp_v] += this.size[ulp_u];
+    } else {
+      this.parent[ulp_v] = ulp_u;
+      this.size[ulp_u] += this.size[ulp_v];
+    }
+  }
+}
+//https://www.youtube.com/watch?v=z-6f0KkSbvU
+let grid = [
+  [0, 1, 2, 3, 4],
+  [24, 23, 22, 21, 5],
+  [12, 13, 14, 15, 16],
+  [11, 17, 18, 19, 20],
+  [10, 9, 8, 7, 6],
+];
+//Output: 16
+
+const ans = leastTimeToReachBottomRight(grid);
+console.log("The least time to reach the bottom right square is: " + ans);
+
+function leastTimeToReachBottomRight(grid) {
+  const n = grid.length;
+  let left = 0;
+  let right = n * n;
+
+  while (left < right) {
+    //  here mid is index.
+    const mid = Math.floor((left + right) / 2);
+    if (canReach(grid, mid)) {
+      right = mid;
+    } else {
+      left = mid + 1;
+    }
+  }
+
+  return left; // as our aim is to get the least time and so we are moving towards higer value and finally our left will point towards the least time
+}
+
+function canReach(grid, time) {
+  const n = grid.length;
+  const ds = new DisjointSet(n * n);
+
+  for (let row = 0; row < n; row++) {
+    for (let col = 0; col < n; col++) {
+      if (grid[row][col] <= time) {
+        const dr = [-1, 0, 1, 0];
+        const dc = [0, -1, 0, 1];
+
+        for (let ind = 0; ind < 4; ind++) {
+          const newr = row + dr[ind];
+          const newc = col + dc[ind];
+          if (
+            newr >= 0 &&
+            newr < n &&
+            newc >= 0 &&
+            newc < n &&
+            grid[newr][newc] <= time
+          ) {
+            let nodeNo = row * n + col;
+            let adjNodeNo = newr * n + newc;
+            ds.unionByRank(nodeNo, adjNodeNo);
+          }
+        }
+      }
+    }
+  }
+
+  return ds.findUPar(0) === ds.findUPar(n * n - 1);
+}
+
+
+======================================================================================================================================================================================
+This code is solving a problem related to finding the least time it takes to reach the bottom-right square in a grid when rain is falling. The grid represents elevations, and you can swim from one cell to another only if both cells' elevations are at most the current time t.
+
+Let's break down the code:
+
+DisjointSet Class: This class is implementing a Disjoint Set data structure, which is used for efficiently handling connected components in a graph. It has three main methods:
+
+findUPar(node): Finds the ultimate parent of a given node in the disjoint set. It uses path compression to optimize future queries.
+unionByRank(u, v): Unions two sets based on their ranks to optimize the structure of the disjoint set and avoid tall trees.
+unionBySize(u, v): Unions two sets based on their sizes, updating the size of the parent accordingly.
+grid and leastTimeToReachBottomRight Function: This function aims to find the least time it takes to reach the bottom-right square in the grid. It uses binary search to optimize the time complexity.
+
+It initializes left to 0 and right to the maximum possible time (n * n, where n is the size of the grid).
+It enters a binary search loop until left is less than right.
+Inside the loop, it calculates the middle time mid and checks if it's possible to reach the bottom-right square within that time using the canReach function.
+If it is possible, it updates right to mid, otherwise, it updates left to mid + 1.
+The loop continues until left is no longer less than right.
+The function returns left as the least time to reach the bottom-right square.
+canReach Function: This function checks if it is possible to reach the bottom-right square within a given time. It uses the Disjoint Set to represent connected components of cells that can be reached.
+
+It iterates through each cell in the grid, and if the elevation is less than or equal to the given time, it checks adjacent cells.
+If the adjacent cell's elevation is also less than or equal to the time, it performs a union operation on their respective disjoint set components.
+After processing the entire grid, it checks if the ultimate parent of the top-left cell is the same as the ultimate parent of the bottom-right cell, indicating a connected path.
+This approach efficiently handles the connected components in the grid and uses binary search to find the least time to reach the destination.

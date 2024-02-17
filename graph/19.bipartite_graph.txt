@@ -1,0 +1,69 @@
+Problem Statement:-
+
+Given an adjacency list of a graph adj of V no. of vertices having 0 based index. Check whether the graph is bipartite or not.
+
+If we are able to colour a graph with two colours such that no adjacent nodes have the same colour, it is called a bipartite graph.
+==================================================================================
+Approach :-
+
+A bipartite graph is a graph which can be coloured using 2 colours such that no adjacent nodes have the same colour. Any linear graph with no cycle is always a bipartite graph. With a cycle, any graph with an even cycle length can also be a bipartite graph. So, any graph with an odd cycle length can never be a bipartite graph.
+
+The intuition is the brute force of filling colours using any traversal technique, just make sure no two adjacent nodes have the same colour. If at any moment of traversal, we find the adjacent nodes to have the same colour, it means that there is an odd cycle, or it cannot be a bipartite graph. 
+
+
+=====================================================================================
+USING DFS : 
+------------------------
+
+const adj = [
+  [1, 2, 3],
+  [0, 2],
+  [0, 1, 3],
+  [0, 2],
+]; //false// adjacency list
+
+// const adj = [
+//     [1, 3],
+//     [0, 2],
+//     [1, 3],
+//     [0, 2],
+//   ]; //true
+
+const ans = isBipartite(adj.length, adj);
+let final = ans ? "true" : "false";
+console.log(final);
+
+function isBipartite(V, adj) {
+  const color = new Array(V).fill(-1);
+  // take starting color  as the color '0'.
+  let color_0_1 = 0;
+
+  for (let i = 0; i < V; i++) {
+    if (color[i] === -1) {
+      // as soon as dfs returns false , return the ans as false
+      if (!dfs(i, color_0_1, color, adj)) return false;
+    }
+  }
+
+  return true;
+}
+
+function dfs(node, color_0_1, color, adj) {
+  color[node] = color_0_1;
+  for (let it of adj[node]) {
+    if (color[it] === -1) {
+      if (!dfs(it, 1 - color_0_1, color, adj)) return false;
+    } else if (color[it] === color_0_1) {
+      // colour same as parent's color, then false.
+      // or 2 adjacent nodes have the same color , then return false
+      return false;
+    }
+  }
+  return true;
+}
+
+
+
+======================================================================================================================================================================================
+
+

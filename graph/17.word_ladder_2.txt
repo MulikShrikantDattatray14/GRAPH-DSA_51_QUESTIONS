@@ -1,0 +1,141 @@
+//https://leetcode.com/problems/word-ladder-ii/description/
+
+//Contrary to the previous problem, here we do not stop the traversal on the first occurrence of the targetWord, but rather continue it for as many occurrences of the word as possible as we need all the shortest possible sequences in order to reach the destination word. The only trick here is that we do not have to delete a particular word immediately from the wordList even if during the replacement of characters it matches with the transformed word. Instead, we delete it after the traversal for a particular level when completed which allows us to explore all possible paths. This allows us to discover multiple sequences in order to reach the targetWord involving similar words. 
+
+class Node {
+  constructor(data) {
+    this.data = data;
+    this.next = null;
+  }
+}
+
+class LinkedListQueue {
+  constructor() {
+    this.front = null;
+    this.rear = null;
+    this.size = 0;
+  }
+
+  enqueue(item) {
+    const newNode = new Node(item);
+
+    if (this.isEmpty()) {
+      this.front = newNode;
+      this.rear = newNode;
+    } else {
+      this.rear.next = newNode;
+      this.rear = newNode;
+    }
+
+    this.size++;
+  }
+
+  dequeue() {
+    if (this.isEmpty()) {
+      console.log("Queue is empty");
+      return null;
+    }
+
+    const removedItem = this.front.data;
+    this.front = this.front.next;
+
+    if (this.front === null) {
+      this.rear = null;
+    }
+
+    this.size--;
+
+    return removedItem;
+  }
+
+  peek() {
+    if (this.isEmpty()) {
+      console.log("Queue is empty");
+      return null;
+    }
+
+    return this.front.data;
+  }
+
+  isEmpty() {
+    return this.size === 0;
+  }
+
+  getSize() {
+    return this.size;
+  }
+}
+//beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log","cog"]
+//[["hit","hot","dot","dog","cog"],["hit","hot","lot","log","cog"]]
+// const startWord = "hit";
+// const targetWord = "cog";
+// const wordList = ["hot","dot","dog","lot","log","cog"]
+
+//beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log"]
+
+const startWord = "hit";
+const targetWord = "cog";
+const wordList = ["hot", "dot", "dog", "lot", "log"];
+const ans = findSequences(startWord, targetWord, wordList);
+
+function findSequences(startWord, targetWord, wordList) {
+  let st = new Set(wordList);
+  let q = new LinkedListQueue(); // Use LinkedListQueue instead of the previous Queue
+  let ls = [startWord];
+  // we have to insert the insert sequence into the queue.
+  q.enqueue(ls);
+  // on every level, how many strings are being used
+  let usedOnLevel = [startWord];
+  let level = 0;
+  let ans = [];
+
+  let cnt = 0;
+
+  while (q.isEmpty() == false) {
+    cnt++;
+    let vec = q.dequeue();
+
+    if (vec.length > level) {
+      level++;
+      for (let it of usedOnLevel) {
+        st.delete(it);
+      }
+    }
+    // take out the last word from the vec
+    let word = vec[vec.length - 1];
+
+    if (word === targetWord) {
+      if (ans.length === 0) {
+        ans.push(vec);
+      } else if (ans[0].length === vec.length) {
+        ans.push(vec);
+      }
+    }
+
+    for (let i = 0; i < word.length; i++) {
+      for (
+        let c = "a";
+        c <= "z";
+        c = String.fromCharCode(c.charCodeAt(0) + 1)
+      ) {
+        let replacedWord = word.slice(0, i) + c + word.slice(i + 1);
+        if (st.has(replacedWord)) {
+          vec.push(replacedWord);
+          let temp = [...vec];
+          q.enqueue(temp);
+          usedOnLevel.push(replacedWord);
+          vec.pop();
+        }
+      }
+    }
+  }
+
+  return ans;
+}
+
+if (ans.length === 0) {
+  console.log([]);
+} else {
+  ans.sort((a, b) => a[0].localeCompare(b[0]));
+  console.log(ans);
+}

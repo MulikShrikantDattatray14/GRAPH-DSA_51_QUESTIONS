@@ -1,0 +1,108 @@
+Problem Statement:-
+
+ Given a directed graph with V vertices and E edges, check whether it contains any cycle or not. 
+
+Time Complexity: O(V+E)+O(V) , where V = no. of nodes and E = no. of edges. There can be at most V components. So, another O(V) time complexity.
+
+Space Complexity: O(2N) + O(N) ~ O(2N): O(2N) for two visited arrays and O(N) for recursive stack space.
+
+=====================================================================================================================================================================================
+
+//In a Directed Cyclic Graph, during traversal, if we end up at a node, which we have visited previously in the path, that means we came around a circle and ended up at this node, which determines that it has a cycle. Previously, we have learned a similar technique to detect cycles in an Undirected Graph (using DFS). In that method, the algorithm returns true, if it finds an adjacent node that is previously visited and not a parent of the current node. But the same algorithm will not work in this case.
+
+//We will be solving it using DFS traversal. DFS goes in-depth, i.e., traverses all nodes by going ahead, and when there are no further nodes to traverse in the current path, then it backtracks on the same path and traverses other unvisited nodes.
+
+//The algorithm steps are as follows:-
+
+//1.We will traverse the graph component-wise using the DFS technique.
+//2.Make sure to carry two visited arrays in the DFS call. One is a visited array(vis) and the other is a path-visited(pathVis) array. The visited array keeps a track of visited nodes, and the path-visited keeps a track of visited nodes in the current traversal only.
+//3.While making a DFS call, at first we will mark the node as visited in both the arrays and then will traverse through its adjacent nodes. Now, there may be either of the three cases:
+//Case 1: If the adjacent node is not visited, we will make a new DFS call recursively with that particular node.
+//Case 2: If the adjacent node is visited and also on the same path(i.e marked visited in the pathVis array), we will return true, because it means it has a cycle, thereby the pathVis was true. Returning true will mean the end of the function call, as once we have got a cycle, there is no need to check for further adjacent nodes.
+//Case 3: If the adjacent node is visited but not on the same path(i.e not marked in the pathVis array), we will continue to the next adjacent node, as it would have been marked as visited in some other path, and not on the current one.
+//4.Finally, if there are no further nodes to visit, we will unmark the current node in the pathVis array and just return false. Then we will backtrack to the previous node with the returned value. The point to remember is, while we enter we mark both the pathVis and vis as true, but at the end of traversal to all adjacent nodes, we just make sure we unmark the pathVis and still keep the vis marked as true, as it will avoid future extra traversal calls.
+
+let edges = [
+  [1, 2],
+  [2, 3],
+  [3, 4],
+  [4, 5],
+  [5, 6],
+  [3, 7],
+  [7, 5],
+  [8, 2],
+  [8, 9],
+  [9, 10],
+  [10, 8],
+]; //true
+// let edges = [
+//   [1, 2],
+//   [2, 3],
+//   [3, 4],
+//   [4, 5],
+//   [5, 6],
+//   [7, 5],
+//   [3, 7],
+//   [8, 2],
+//   [8, 9],
+//   [9, 10],
+// ]; //false
+const V = edges.length;
+const adj = [];
+for (let i = 0; i < V; i++) {
+  adj.push([]);
+}
+for (const [u, v] of edges) {
+  adj[u].push(v);
+}
+
+const ans = isCyclic(V, adj);
+if (ans) {
+  console.log("True");
+} else {
+  console.log("False");
+}
+// Function to detect cycle in a directed graph.
+function isCyclic(V, adj) {
+  const Node_vis = new Array(V).fill(0);
+  const path_vis = new Array(V).fill(0);
+
+  for (let i = 0; i < V; i++) {
+    if (Node_vis[i] === 0) {
+      // if not visited
+      if (dfsCheck(i, adj, Node_vis, path_vis) === true) {
+        // cycle present
+        return true;
+      }
+    }
+  }
+  // cycle not present
+  return false;
+}
+function dfsCheck(node, adj, Node_vis, path_vis) {
+  Node_vis[node] = 1;
+  path_vis[node] = 1;
+
+  // traverse for adjacent nodes
+  for (let it of adj[node]) {
+    // when the node is not visited
+    if (Node_vis[it] === 0) {
+      if (dfsCheck(it, adj, Node_vis, path_vis) === true) {
+        return true;
+      }
+    }
+    // if the node has been previously visited
+    // but it has to be visited on the same path
+    // if node is visited but path is not visited , that mean some one visied that node through a different path .
+    else if (Node_vis[it] == 1 && path_vis[it] === 1) {
+      return true;
+    }
+  }
+  // very important .
+  // while returning back from each convert 1 to 0
+  path_vis[node] = 0;
+  return false;
+}
+
+
+======================================================================================================================================================================================

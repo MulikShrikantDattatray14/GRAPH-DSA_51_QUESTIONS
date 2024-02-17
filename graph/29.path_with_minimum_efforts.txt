@@ -1,0 +1,174 @@
+You are a hiker preparing for an upcoming hike. You are given heights, a 2D array of size rows x columns, where heights[row][col] represents the height of the cell (row, col). You are situated in the top-left cell, (0, 0), and you hope to travel to the bottom-right cell, (rows-1, columns-1) (i.e.,0-indexed). You can move up, down, left, or right, and you wish to find a route that requires the minimum effort.
+
+A route’s effort is the maximum absolute difference in heights between two consecutive cells of the route.
+
+
+==========================================================================================================
+// You can move up, down, left, or right, and you wish to find a route that requires the minimum effort.A route’s effort is the maximum absolute difference in heights between two consecutive cells of the route.
+
+-----------------------------------------------------------------------------------------------------------
+
+
+class MinHeap {
+  constructor() {
+    this.heap = [];
+  }
+
+  insert(element) {
+    // here we are going from bottom to top
+    this.heap.push(element);
+    this.heapifyUp();
+  }
+
+  extractMin() {
+    if (this.isEmpty()) {
+      return null;
+    }
+
+    const min = this.heap[0];
+    const lastElement = this.heap.pop();
+
+    if (this.heap.length > 0) {
+      this.heap[0] = lastElement;
+      this.heapifyDown();
+    }
+
+    return min;
+  }
+
+  peek() {
+    return this.isEmpty() ? null : this.heap[0];
+  }
+
+  isEmpty() {
+    return this.heap.length === 0;
+  }
+
+  heapifyUp() {
+    //here we are going from bottom to top
+    let currentIndex = this.heap.length - 1; // bcz its a zero based index
+
+    while (currentIndex > 0) {
+      // till we reach the top
+      const parentIndex = Math.floor((currentIndex - 1) / 2);
+      if (this.heap[currentIndex].distance < this.heap[parentIndex].distance) {
+        this.swap(currentIndex, parentIndex);
+        currentIndex = parentIndex;
+      } else {
+        break;
+      }
+    }
+  }
+
+  heapifyDown() {
+    // here we are going from top to bottom
+    let currentIndex = 0;
+
+    while (true) {
+      const leftChildIndex = 2 * currentIndex + 1;
+      const rightChildIndex = 2 * currentIndex + 2;
+      let smallestChildIndex = currentIndex;
+
+      if (
+        leftChildIndex < this.heap.length &&
+        this.heap[leftChildIndex].distance <
+          this.heap[smallestChildIndex].distance
+      ) {
+        smallestChildIndex = leftChildIndex;
+      }
+
+      if (
+        rightChildIndex < this.heap.length &&
+        this.heap[rightChildIndex].distance <
+          this.heap[smallestChildIndex].distance
+      ) {
+        smallestChildIndex = rightChildIndex;
+      }
+
+      if (smallestChildIndex !== currentIndex) {
+        this.swap(currentIndex, smallestChildIndex);
+        currentIndex = smallestChildIndex;
+      } else {
+        break;
+      }
+    }
+  }
+
+  swap(i, j) {
+    const temp = this.heap[i];
+    this.heap[i] = this.heap[j];
+    this.heap[j] = temp;
+  }
+}
+//===============================================================================================================================================================================================================================
+
+// const heights = [
+//   [1, 2, 2],
+//   [3, 8, 2],
+//   [5, 3, 5],
+// ];//2
+// let heights = [
+//   [1, 2, 1, 1, 1],
+//   [1, 2, 1, 2, 1],
+//   [1, 2, 1, 2, 1],
+//   [1, 1, 1, 2, 1],
+// ]; //0
+let heights = [
+  [1, 2, 2],
+  [3, 8, 2],
+  [5, 3, 5],
+];
+const ans = MinimumEffort(heights);
+console.log(ans);
+// You can move up, down, left, or right, and you wish to find a route that requires the minimum effort.
+
+//A route’s effort is the maximum absolute difference in heights between two consecutive cells of the route.
+
+function Tuple(distance, row, col) {
+  return { distance, row, col };
+}
+
+function MinimumEffort(heights) {
+  const n = heights.length;
+  const m = heights[0].length;
+
+  const priorityqueue = new MinHeap();
+  const dist = [];
+  for (let i = 0; i < n; i++) {
+    dist.push(new Array(m).fill(Infinity));
+  }
+  dist[0][0] = 0;
+  // distance, row ,column
+  priorityqueue.insert(Tuple(0, 0, 0));
+
+  const dr = [-1, 0, 1, 0];
+  const dc = [0, 1, 0, -1];
+
+  while (priorityqueue.isEmpty() == false) {
+    const { distance, row, col } = priorityqueue.extractMin(); //remove the first
+
+    if (row === n - 1 && col === m - 1) return distance;
+
+    for (let i = 0; i < 4; i++) {
+      const newr = row + dr[i];
+      const newc = col + dc[i];
+      if (newr >= 0 && newc >= 0 && newr < n && newc < m) {
+        const newEffort = Math.max(
+          Math.abs(heights[row][col] - heights[newr][newc]),
+          distance
+        );
+        if (newEffort < dist[newr][newc]) {
+          // here dist[newr][newc] is infinity
+          dist[newr][newc] = newEffort;
+          priorityqueue.insert(Tuple(newEffort, newr, newc));
+        }
+      }
+    }
+  }
+
+  return 0;
+}
+
+
+
+============================================================================================================

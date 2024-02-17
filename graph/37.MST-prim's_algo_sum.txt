@@ -1,0 +1,365 @@
+Problem Statement: 
+
+Given a weighted, undirected, and connected graph of V vertices and E edges. The task is to find the sum of weights of the edges of the Minimum Spanning Tree.
+(Sometimes it may be asked to find the MST as well, where in the MST the edge-informations will be stored in the form {u, v}(u = starting node, v = ending node).)
+
+
+//=============================================================================================================================================================================
+
+
+note : 
+
+Spanning Tree:
+
+A spanning tree is a tree in which we have N nodes(i.e. All the nodes present in the original graph) and N-1 edges and all nodes are reachable from each other.
+
+
+Minimum Spanning Tree:
+Among all possible spanning trees of a graph, the minimum spanning tree is the one for which the sum of all the edge weights is the minimum.
+
+There are a couple of algorithms that help us to find the minimum spanning tree of a graph. One is Prim’s algorithm and the other is Kruskal’s algorithm.
+
+==============================================================================================================================================================================
+1. return sum : 
+------------------
+//========================================================================================================================================================
+
+class MinHeap {
+  constructor() {
+    this.heap = [];
+  }
+
+  insert(element) {
+    // here we are going from bottom to top
+    this.heap.push(element);
+    this.heapifyUp();
+  }
+
+  extractMin() {
+    if (this.isEmpty()) {
+      return null;
+    }
+
+    const min = this.heap[0];
+    const lastElement = this.heap.pop();
+
+    if (this.heap.length > 0) {
+      this.heap[0] = lastElement;
+      this.heapifyDown();
+    }
+
+    return min;
+  }
+
+  peek() {
+    return this.isEmpty() ? null : this.heap[0];
+  }
+
+  isEmpty() {
+    return this.heap.length === 0;
+  }
+
+  heapifyUp() {
+    //here we are going from bottom to top
+    let currentIndex = this.heap.length - 1; // bcz its a zero based index
+
+    while (currentIndex > 0) {
+      // till we reach the top
+      const parentIndex = Math.floor((currentIndex - 1) / 2);
+      if (this.heap[currentIndex][0] < this.heap[parentIndex][0]) {
+        this.swap(currentIndex, parentIndex);
+        currentIndex = parentIndex;
+      } else {
+        break;
+      }
+    }
+  }
+
+  heapifyDown() {
+    // here we are going from top to bottom
+    let currentIndex = 0;
+
+    while (true) {
+      const leftChildIndex = 2 * currentIndex + 1;
+      const rightChildIndex = 2 * currentIndex + 2;
+      let smallestChildIndex = currentIndex;
+
+      if (
+        leftChildIndex < this.heap.length &&
+        this.heap[leftChildIndex][0] < this.heap[smallestChildIndex][0]
+      ) {
+        smallestChildIndex = leftChildIndex;
+      }
+
+      if (
+        rightChildIndex < this.heap.length &&
+        this.heap[rightChildIndex][0] < this.heap[smallestChildIndex][0]
+      ) {
+        smallestChildIndex = rightChildIndex;
+      }
+
+      if (smallestChildIndex !== currentIndex) {
+        this.swap(currentIndex, smallestChildIndex);
+        currentIndex = smallestChildIndex;
+      } else {
+        break;
+      }
+    }
+  }
+
+  swap(i, j) {
+    const temp = this.heap[i];
+    this.heap[i] = this.heap[j];
+    this.heap[j] = temp;
+  }
+}
+//The algorithm steps are as follows:
+
+//Priority Queue(Min Heap): The priority queue will be storing the pairs (edge weight, node). We can start from any given node. Here we are going to start from node 0 and so we will initialize the priority queue with (0, 0). If we wish to store the mst of the graph, the priority queue should instead store the triplets (edge weight, adjacent node, parent node) and in that case, we will initialize with (0, 0, -1).
+
+//Visited array: All the nodes will be initially marked as unvisited.
+
+//sum variable: It will be initialized with 0 and we wish that it will store the sum of the edge weights finally.
+
+//MST array(optional): If we wish to store the minimum spanning tree(MST) of the graph, we need this array. This will store the edge information as a pair of starting and ending nodes of a particular edge.
+
+//We will first push edge weight 0, node value 0, and parent -1 as a triplet into the priority queue to start the algorithm.
+//Note: We can start from any node of our choice. Here we have chosen node 0.
+//Then the top-most element (element with minimum edge weight as it is the min-heap we are using) of the priority queue is popped out.
+//After that, we will check whether the popped-out node is visited or not.
+//If the node is visited: We will continue to the next element of the priority queue.
+//If the node is not visited: We will mark the node visited in the visited array and add the edge weight to the sum variable. If we wish to store the mst, we should insert the parent node and the current node into the mst array as a pair in this step.
+//Now, we will iterate on all the unvisited adjacent nodes of the current node and will store each of their information in the specified triplet format i.e. (edge weight, node value, and parent node) in the priority queue.
+//We will repeat steps 2, 3, and 4 using a loop until the priority queue becomes empty.
+//Finally, the sum variable should store the sum of all the edge weights of the minimum spanning tree.
+let V = 5;
+let edges = [
+  [0, 1, 2],
+  [0, 3, 6],
+  [1, 2, 3],
+  [1, 3, 8],
+  [1, 4, 5],
+  [4, 2, 7],
+]; //sum=16;
+let start_node = 2;
+const adj = [];
+for (let i = 0; i < V; i++) {
+  adj.push([]);
+}
+for (let i = 0; i < edges.length; i++) {
+  const [u, v, w] = edges[i];
+  adj[u].push([v, w]);
+  adj[v].push([u, w]);
+}
+const sum = spanningTree(V, adj, start_node);
+console.log("The sum of all the edge weights:", sum);
+
+//The intuition of this algorithm is the greedy technique used for every node. If we carefully observe, for every node, we are greedily selecting its unvisited adjacent node with the minimum edge weight(as the priority queue here is a min-heap and the topmost element is the node with the minimum edge weight). Doing so for every node, we can get the sum of all the edge weights of the minimum spanning tree and the spanning tree itself(if we wish to) as well.
+
+// start node can be any node.
+
+function spanningTree(V, adj, start_node) {
+  const pq = new MinHeap();
+  const vis = new Array(V).fill(0);
+  pq.insert([0, start_node]); //[weight, node]
+  let sum = 0;
+  while (pq.isEmpty() == false) {
+    const [wt, node] = pq.extractMin();
+    if (vis[node] === 1) continue; // Skip if the node is already visited
+    vis[node] = 1; // Mark the node as visited
+    sum += wt;
+
+    for (let i = 0; i < adj[node].length; i++) {
+      const [adjNode, edW] = adj[node][i];
+      if (vis[adjNode] === 0) {
+        pq.insert([edW, adjNode]);
+      }
+    }
+  }
+  return sum;
+}
+
+======================================================================================================================================================================================
+// return sum and also the mst edges : 
+-------------------------------------------------------------------------------------
+
+
+class MinHeap {
+  constructor() {
+    this.heap = [];
+  }
+
+  insert(element) {
+    // here we are going from bottom to top
+    this.heap.push(element);
+    this.heapifyUp();
+  }
+
+  extractMin() {
+    if (this.isEmpty()) {
+      return null;
+    }
+
+    const min = this.heap[0];
+    const lastElement = this.heap.pop();
+
+    if (this.heap.length > 0) {
+      this.heap[0] = lastElement;
+      this.heapifyDown();
+    }
+
+    return min;
+  }
+
+  peek() {
+    return this.isEmpty() ? null : this.heap[0];
+  }
+
+  isEmpty() {
+    return this.heap.length === 0;
+  }
+
+  heapifyUp() {
+    //here we are going from bottom to top
+    let currentIndex = this.heap.length - 1; // bcz its a zero based index
+
+    while (currentIndex > 0) {
+      // till we reach the top
+      const parentIndex = Math.floor((currentIndex - 1) / 2);
+      if (this.heap[currentIndex].wt < this.heap[parentIndex].wt) {
+        this.swap(currentIndex, parentIndex);
+        currentIndex = parentIndex;
+      } else {
+        break;
+      }
+    }
+  }
+
+  heapifyDown() {
+    // here we are going from top to bottom
+    let currentIndex = 0;
+
+    while (true) {
+      const leftChildIndex = 2 * currentIndex + 1;
+      const rightChildIndex = 2 * currentIndex + 2;
+      let smallestChildIndex = currentIndex;
+
+      if (
+        leftChildIndex < this.heap.length &&
+        this.heap[leftChildIndex][0] < this.heap[smallestChildIndex][0]
+      ) {
+        smallestChildIndex = leftChildIndex;
+      }
+
+      if (
+        rightChildIndex < this.heap.length &&
+        this.heap[rightChildIndex][0] < this.heap[smallestChildIndex][0]
+      ) {
+        smallestChildIndex = rightChildIndex;
+      }
+
+      if (smallestChildIndex !== currentIndex) {
+        this.swap(currentIndex, smallestChildIndex);
+        currentIndex = smallestChildIndex;
+      } else {
+        break;
+      }
+    }
+  }
+
+  swap(i, j) {
+    const temp = this.heap[i];
+    this.heap[i] = this.heap[j];
+    this.heap[j] = temp;
+  }
+}
+
+let V = 5;
+let edges = [
+  [0, 1, 2],
+  [0, 3, 6],
+  [1, 2, 3],
+  [1, 3, 8],
+  [1, 4, 5],
+  [4, 2, 7],
+]; //sum=16; MST = {(0, 1), (0, 3), (1, 2), (1, 4)}
+///////////////////////////////////////////////////////////////////////
+// let V = 5;
+// let edges = [
+//   [0, 1, 2],
+//   [0, 2, 1],
+//   [1, 2, 1],
+//   [2, 3, 2],
+//   [3, 4, 1],
+//   [4, 2, 2],
+// ]; //sum=5; MST = {(0, 2), (1, 2), (2, 3), (3, 4)}
+
+//===========================================================================
+
+const adj = [];
+for (let i = 0; i < V; i++) {
+  adj.push([]);
+}
+
+for (let i = 0; i < edges.length; i++) {
+  const [u, v, w] = edges[i];
+  adj[u].push([v, w]);
+  adj[v].push([u, w]);
+}
+
+//==================================================================================
+const { sum, mstEdges } = spanningTree(V, adj);
+console.log("The sum of all the edge weights:", sum);
+console.log("The edges forming the MST:", mstEdges);
+
+//================================================================================
+
+function spanningTree(V, adj) {
+  const pq = new MinHeap();
+  const vis = new Array(V).fill(0);
+  pq.insert([0, 0, -1]); //[weight, node, parent]
+  let sum = 0;
+  const mstEdges = [];
+  while (pq.isEmpty() == false) {
+    const [wt, node, parent] = pq.extractMin();
+
+    if (vis[node] === 1) continue;
+    vis[node] = 1;
+    sum += wt;
+    ////These lines are responsible for adding an edge to the minimum spanning tree (mstEdges) only if the current node (node) has a parent node in the spanning tree.
+    if (parent !== -1) {
+      //these lines ensure that only edges with valid parent nodes (excluding the initial node) are added to the minimum spanning tree representation.
+      mstEdges.push([parent, node]);
+    }
+
+    for (let i = 0; i < adj[node].length; i++) {
+      const [adjNode, edW] = adj[node][i];
+      if (vis[adjNode] === 0) {
+        pq.insert([edW, adjNode, node]);
+      }
+    }
+  }
+  return { sum, mstEdges };
+}
+
+//=======================================================================================================================================================================
+
+//The logic behind the lines:
+
+//if (parent !== -1) {
+// mstEdges.push([parent, node]);
+//}
+//These lines are responsible for adding an edge to the minimum spanning tree (mstEdges) only if the current node (node) has a parent node in the spanning tree.
+
+//In Prim's algorithm, when you extract the minimum-weight edge from the priority queue, you have the information about the current edge's weight (wt), the current node (node), and its parent node (parent). The parent node is the node that connects to the current node in the minimum spanning tree.
+
+//Here's the breakdown of the logic:
+
+//if (parent !== -1): This condition checks if the current node has a parent. The value -1 is used to indicate that the initial node doesn't have a parent since it's the starting point of the algorithm.
+
+//mstEdges.push([parent, node]);: If the current node has a parent (i.e., it's not the initial node), the edge [parent, node] is added to the mstEdges array. This represents an edge in the minimum spanning tree, connecting the current node to its parent.
+
+//In summary, these lines ensure that only edges with valid parent nodes (excluding the initial node) are added to the minimum spanning tree representation.
+
+
+==================================================================================

@@ -1,0 +1,123 @@
+Given a DAG, find the shortest path from the source to all other nodes in this DAG. In this problem statement, we have assumed the source vertex to be ‘0’. You will be given the weighted edges of the graph.
+
+Note: What is a DAG ( Directed Acyclic Graph)?
+
+A Directed Graph (containing one-sided edges) having no cycles is said to be a Directed Acyclic Graph.
+=============================================================================
+
+class Stack {
+  constructor() {
+    this.items = [];
+  }
+
+  // Push element onto the stack
+  push(element) {
+    this.items.push(element);
+  }
+
+  // Pop element from the stack
+  pop() {
+    if (this.isEmpty()) {
+      return "Underflow";
+    }
+    return this.items.pop();
+  }
+
+  // Peek at the top element of the stack without removing it
+  peek() {
+    return this.isEmpty()
+      ? "Stack is empty"
+      : this.items[this.items.length - 1];
+  }
+
+  // Check if the stack is empty
+  isEmpty() {
+    return this.items.length === 0;
+  }
+
+  // Get the size of the stack
+  size() {
+    return this.items.length;
+  }
+
+  // Print the elements of the stack
+  print() {
+    console.log(this.items.join(" "));
+  }
+
+  // Clear the stack
+  clear() {
+    this.items = [];
+  }
+}
+const N = 6;
+const M = 7;
+const edges = [
+  [0, 1, 2],
+  [0, 4, 1],
+  [4, 5, 4],
+  [4, 2, 2],
+  [1, 2, 3],
+  [2, 3, 6],
+  [5, 3, 1],
+];
+let src = 0;
+
+//Finding the shortest path to a vertex is easy if you already know the shortest paths to all the vertices that can precede it. Processing the vertices in topological order ensures that by the time you get to a vertex, you’ve already processed all the vertices that can precede it which reduces the computation time significantly. In this approach, we traverse the nodes sequentially according to their reachability from the source.
+
+//Dijkstra’s algorithm is necessary for graphs that can contain cycles because they can’t be topologically sorted. In other cases, the topological sort would work fine as we start from the first node, and then move on to the others in a directed manner.
+
+const adj = [];
+for (let i = 0; i < N; i++) {
+  adj.push([]);
+}
+for (let i = 0; i < M; i++) {
+  const u = edges[i][0];
+  const v = edges[i][1];
+  const wt = edges[i][2];
+  adj[u].push({ first: v, second: wt });
+}
+// do topological sort
+const vis = new Array(N).fill(0);
+const st = new Stack(); // follows LIFO
+
+for (let i = 0; i < N; i++) {
+  if (vis[i] === 0) {
+    topoSort(i, adj, vis, st);
+  }
+}
+function topoSort(node, adj, vis, st) {
+  vis[node] = 1;
+  for (let i = 0; i < adj[node].length; i++) {
+    const v = adj[node][i].first;
+    if (vis[v] === 0) {
+      topoSort(v, adj, vis, st);
+    }
+  }
+  st.push(node);
+}
+
+// distance array
+let dist = new Array(N).fill(1e9);
+// starting node- mark it as zero .
+dist[src] = 0;
+while (st.size() !== 0) {
+  // keep taking from back
+  const node = st.pop(); // remove last one
+  for (let i = 0; i < adj[node].length; i++) {
+    const v = adj[node][i].first;
+    const wt = adj[node][i].second;
+    if (dist[node] + wt < dist[v]) {
+      // update to smallest
+      dist[v] = wt + dist[node];
+    }
+  }
+}
+for (let i = 0; i < N; i++) {
+  if (dist[i] === 1e9) dist[i] = -1;
+}
+
+console.log(dist);
+
+
+==============================================================================
